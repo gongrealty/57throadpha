@@ -161,28 +161,31 @@
   .lightbox .lb-prev{left:20px}.lightbox .lb-next{right:20px}
 
   @media(max-width:760px){
-    /* Mobile hero: show the FULL photo at native 3:2 (no crop), info stacked below */
-    .hero{height:auto;min-height:0;display:flex;flex-direction:column;background:var(--ink)}
-    .hero::after{display:none}
-    .slides{position:relative;width:100%;aspect-ratio:3/2;order:1;flex:none}
+    /* Mobile hero: full-width UNCROPPED 3:2 photo, with the same overlays as desktop
+       (address bottom-left, agent card top-right, gradient) — just a shorter panel. */
+    .hero{height:auto;min-height:0}
+    .slides{position:relative;width:100%;aspect-ratio:3/2}
     .slide{transform:none}
-    .slide.on{animation:none;transform:none}        /* no Ken-Burns zoom = whole photo shows */
-    .dots{position:static;order:2;margin:14px auto 2px}
-    .dots button{background:rgba(255,255,255,.5)}
-    .hero-info{position:static;order:3;padding:6px 22px 2px;text-align:center}
-    .hero-info h1{text-shadow:none;font-size:clamp(27px,7.4vw,40px);line-height:1.06}
-    .hero-info .eyebrow{margin-bottom:9px}
-    .hero-info .place{margin-top:9px}
-    .hero-info .price{margin-top:14px;font-size:26px}
-    .agent-card{position:static;order:4;top:auto;right:auto;bottom:auto;left:auto;
-      margin:20px auto 26px;width:calc(100% - 44px);max-width:340px}
+    .slide.on{animation:none;transform:none}     /* no Ken-Burns zoom -> whole photo shows */
+    .hero::after{background:linear-gradient(180deg,rgba(0,0,0,.46) 0%,rgba(0,0,0,0) 24%,rgba(0,0,0,0) 40%,rgba(0,0,0,.78) 100%)}
+    .hero-info{padding:0 18px 22px}
+    .hero-info .eyebrow{font-size:10px;letter-spacing:.26em;margin-bottom:6px}
+    .hero-info h1{font-size:clamp(22px,6.6vw,32px);line-height:1.05;text-shadow:0 2px 16px rgba(0,0,0,.6)}
+    .hero-info .place{margin-top:6px;font-size:11px}
+    .hero-info .price{margin-top:9px;font-size:21px}
+    .agent-card{top:12px;right:12px;left:auto;bottom:auto;gap:9px;padding:8px 11px 8px 8px;max-width:210px}
+    .agent-card img{width:40px;height:40px}
+    .agent-card .who b{font-size:14px}
+    .agent-card .who .brk{font-size:9px;margin-top:0}
+    .agent-card .who a{font-size:11px}
+    .dots{bottom:8px}
     .hero .scrollcue{display:none}
 
     .hl-grid{grid-template-columns:1fr 1fr;gap:22px}
   }
   @media(max-width:540px){
     .hl-grid{grid-template-columns:1fr}
-    .agent-card .who a{font-size:12px}
+    .hero-info h1{font-size:clamp(21px,6.4vw,30px)}
   }
 </style>
 </head>
