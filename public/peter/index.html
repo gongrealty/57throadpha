@@ -179,11 +179,13 @@
     .hero-info h1{font-size:clamp(22px,6.6vw,32px);line-height:1.05;text-shadow:0 2px 16px rgba(0,0,0,.6)}
     .hero-info .place{margin-top:6px;font-size:11px}
     .hero-info .price{margin-top:9px;font-size:21px}
-    .agent-card{top:12px;right:12px;left:auto;bottom:auto;gap:9px;padding:8px 11px 8px 8px;max-width:210px}
-    .agent-card img{width:40px;height:40px}
-    .agent-card .who b{font-size:14px}
-    .agent-card .who .brk{font-size:9px;margin-top:0}
-    .agent-card .who a{font-size:11px}
+    /* ~30% smaller card so it stops covering the photo; text stays legible */
+    .agent-card{top:10px;right:10px;left:auto;bottom:auto;gap:7px;padding:6px 9px 6px 6px;max-width:166px;border-radius:10px;align-items:center}
+    .agent-card img{width:28px;height:28px;border-width:1.5px}
+    .agent-card .who{line-height:1.22}
+    .agent-card .who b{font-size:12px}
+    .agent-card .who .brk{font-size:7.5px;letter-spacing:.12em;margin-top:0}
+    .agent-card .who a{font-size:9.5px;margin-top:1px;white-space:nowrap}
     .dots{bottom:8px}
     .hero .scrollcue{display:none}
 
