@@ -87,7 +87,13 @@
   .statbar .ic svg{width:34px;height:34px;display:block;margin:0 auto;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
   .statbar .v{font-family:var(--sans);font-weight:600;font-size:clamp(23px,2.7vw,30px);color:var(--ink);letter-spacing:.005em;line-height:1}
   .statbar .l{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:8px}
-  @media(max-width:560px){ .statbar{gap:24px 30px} .statbar .sc{min-width:80px} }
+  @media(max-width:600px){
+    /* mobile: exactly 2 icons on row 1 (Price, MLS), the rest on row 2 (keeps Beds+Baths together) */
+    .statbar{gap:26px 20px}
+    .statbar .sc{min-width:0}
+    .statbar .sc:nth-child(-n+2){flex:0 0 40%}
+    .statbar .sc:nth-child(n+3){flex:0 1 auto}
+  }
   .costs{margin-top:34px;display:inline-flex;flex-wrap:wrap;justify-content:center;gap:8px 26px;
     background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 26px}
   .costs span{font-size:13.5px;color:#4a443c;letter-spacing:.02em}
