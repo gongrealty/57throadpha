@@ -4,16 +4,14 @@
   "installCommand": null,
   "outputDirectory": "public",
   "cleanUrls": true,
-  "redirects": [
+  "rewrites": [
     {
       "source": "/peter",
-      "destination": "/",
-      "permanent": true
+      "destination": "/index.html"
     },
     {
-      "source": "/peter/:path*",
-      "destination": "/:path*",
-      "permanent": true
+      "source": "/peter/",
+      "destination": "/index.html"
     }
   ]
 }
