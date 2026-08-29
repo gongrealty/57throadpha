@@ -1,0 +1,43 @@
+# Reads the X-Sense sensors and stores the readings in Supabase.
+# Goes in .github/workflows/ of the repo. Needs four repo secrets:
+#   XSENSE_EMAIL, XSENSE_PASSWORD, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+#
+# Cadence note: GitHub bills Actions minutes rounded UP to the whole minute
+# on private repos, against a 2,000 minute/month free allowance. Hourly is
+# ~720 runs/month and fits comfortably. Every 15 minutes would be ~2,880
+# runs and would blow the allowance. If this repo is public, minutes are
+# unlimited and the schedule can be tightened freely.
+name: X-Sense sensor collect
+
+on:
+  schedule:
+    - cron: "7 * * * *"   # hourly, at :07 past (UTC)
+  workflow_dispatch:      # lets you run it by hand from the Actions tab
+
+concurrency:
+  group: xsense-collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/xsense/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r scripts/xsense/requirements.txt
+
+      - name: Collect readings
+        env:
+          XSENSE_EMAIL: ${{ secrets.XSENSE_EMAIL }}
+          XSENSE_PASSWORD: ${{ secrets.XSENSE_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/xsense/collect.py

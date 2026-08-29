@@ -98,6 +98,15 @@
     background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 26px}
   .costs span{font-size:13.5px;color:#4a443c;letter-spacing:.02em}
   .costs span b{color:var(--ink);font-weight:600}
+  /* Live indoor conditions -- hidden unless the sensor feed answers */
+  .live{margin-top:14px;display:none;flex-wrap:wrap;justify-content:center;align-items:center;
+    gap:8px 22px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 24px}
+  .live.on{display:inline-flex}
+  .live span{font-size:13.5px;color:#4a443c;letter-spacing:.02em}
+  .live span b{color:var(--ink);font-weight:600}
+  .live .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);padding:0;
+    box-shadow:0 0 0 3px rgba(180,138,63,.18)}
+  .live .ago{color:var(--muted);font-size:12.5px}
 
   /* ---------- HIGHLIGHTS ---------- */
   .highlights{background:var(--card);border-bottom:1px solid var(--line)}
@@ -267,6 +276,12 @@
         <span>Duplex penthouse condominium</span>
         <span>Common charges <b>$997.15</b>/mo</span>
         <span>Real estate taxes <b>$416.33</b>/mo</span>
+      </div>
+      <div class="live" id="live" aria-live="polite">
+        <span class="dot" aria-hidden="true"></span>
+        <span>Inside right now <b id="liveTemp">&mdash;</b></span>
+        <span>Humidity <b id="liveHum">&mdash;</b></span>
+        <span class="ago" id="liveAgo"></span>
       </div>
     </div>
   </section>
@@ -446,6 +461,38 @@
     if(!lb.classList.contains('on')) return;
     if(e.key==='Escape') closeLb(); else if(e.key==='ArrowLeft') lbGo(-1); else if(e.key==='ArrowRight') lbGo(1);
   });
+})();
+
+/* ---- Live indoor conditions -------------------------------------------
+   Asks /api/conditions for the latest sensor reading. If anything is wrong
+   -- feed down, no data, stale -- the block stays hidden and the page looks
+   exactly as it did before. Never shows an error to a visitor. */
+(function(){
+  var box = document.getElementById('live');
+  if (!box) return;
+
+  function ago(iso){
+    var mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+    if (mins < 2)  return 'just now';
+    if (mins < 60) return mins + ' minutes ago';
+    var hrs = Math.round(mins / 60);
+    if (hrs < 24)  return hrs === 1 ? 'an hour ago' : hrs + ' hours ago';
+    var days = Math.round(hrs / 24);
+    return days === 1 ? 'yesterday' : days + ' days ago';
+  }
+
+  fetch('/api/conditions')
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      if (!d || !d.ok || d.stale) return;
+      document.getElementById('liveTemp').textContent = d.tempF + '°F';
+      var hum = document.getElementById('liveHum');
+      if (d.humidity === null) { hum.parentNode.style.display = 'none'; }
+      else { hum.textContent = d.humidity + '%'; }
+      document.getElementById('liveAgo').textContent = 'Updated ' + ago(d.updatedAt);
+      box.classList.add('on');
+    })
+    .catch(function(){ /* stay hidden */ });
 })();
 </script>
 </body>
