@@ -89,7 +89,9 @@ module.exports = async (req, res) => {
         return {
           label: loc ? loc.label : x.device_name,
           order: loc ? loc.order : 99,
-          tempF: Math.round(toF(x.temp_c)),
+          // The sensors report 0.1C, which is finer than 0.1F, so a single
+          // decimal here is real precision rather than invented digits.
+          tempF: Math.round(toF(x.temp_c) * 10) / 10,
           history: (history[x.device_id] || []).map((v) => Math.round(v * 10) / 10),
         };
       })

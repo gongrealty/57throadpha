@@ -571,7 +571,9 @@
       name.textContent = s.label;
 
       var val = document.createElement('b');
-      val.textContent = s.tempF + '°F';
+      // toFixed keeps a trailing .0, so the column stays aligned when a
+      // reading lands on a whole degree.
+      val.textContent = Number(s.tempF).toFixed(1) + '°F';
 
       row.appendChild(name);
       row.appendChild(val);
