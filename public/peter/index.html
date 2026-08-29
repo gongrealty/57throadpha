@@ -513,15 +513,21 @@
 
    The password box sits on the listing page itself -- one page, one URL.
    Before showing it we ask the server whether the panel is actually live,
-   so a visitor never meets a password box that could not have worked. */
+   so a visitor never meets a password box that could not have worked.
+
+   Nothing is remembered. Every load asks for the password again, and the
+   password is never written to storage of any kind. */
 (function(){
   var box  = document.getElementById('live');
   var lock = document.getElementById('liveLock');
   var data = document.getElementById('liveData');
   if (!box || !lock || !data) return;
 
-  var KEY = 'pha-conditions-pw';
   var W = 84, H = 20;
+
+  // An earlier version remembered the password here. Clear it out, so no
+  // browser is left holding it after this change.
+  try { localStorage.removeItem('pha-conditions-pw'); } catch (e) {}
 
   function ago(iso){
     var mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
@@ -601,7 +607,7 @@
     box.classList.add('on');
   }
 
-  function attempt(pw, quiet){
+  function attempt(pw){
     return fetch('/api/conditions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -609,20 +615,10 @@
     })
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(d){
-        if (d && d.ok && !d.stale) {
-          try { localStorage.setItem(KEY, pw); } catch (e) {}
-          render(d);
-          return true;
-        }
-        // A stored password that no longer works shouldn't keep failing
-        // silently on every visit.
-        if (d && d.reason === 'bad_password') {
-          try { localStorage.removeItem(KEY); } catch (e) {}
-          if (!quiet) showLock(true);
-          return false;
-        }
+        if (d && d.ok && !d.stale) { render(d); return true; }
+        if (d && d.reason === 'bad_password') { showLock(true); return false; }
         // Locked is the one case worth offering a password box for.
-        if (d && d.reason === 'locked') { if (!quiet) showLock(false); return false; }
+        if (d && d.reason === 'locked') { showLock(false); return false; }
         // Anything else -- feed down, no data, stale, misconfigured -- shows
         // nothing at all rather than a box that cannot succeed.
         return false;
@@ -631,31 +627,22 @@
   }
 
   document.getElementById('livePwGo').addEventListener('click', function(){
-    attempt(document.getElementById('livePw').value, false);
+    attempt(document.getElementById('livePw').value);
   });
   document.getElementById('livePw').addEventListener('keydown', function(e){
-    if (e.key === 'Enter') attempt(this.value, false);
+    if (e.key === 'Enter') attempt(this.value);
   });
 
-  var saved = null;
-  try { saved = localStorage.getItem(KEY); } catch (e) {}
-
-  if (saved) {
-    // A remembered password unlocks straight away; if it no longer works,
-    // attempt() falls through to the password box.
-    attempt(saved, false);
-  } else {
-    // Ask, with no password, purely to learn whether the panel is live.
-    // The server answers "locked" and hands over nothing.
-    fetch('/api/conditions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({})
-    })
-      .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(d){ if (d && (d.reason === 'locked' || d.reason === 'bad_password')) showLock(false); })
-      .catch(function(){ /* stay hidden */ });
-  }
+  // Always start locked. Ask, with no password, purely to learn whether the
+  // panel is live -- the server answers "locked" and hands over nothing.
+  fetch('/api/conditions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({})
+  })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){ if (d && (d.reason === 'locked' || d.reason === 'bad_password')) showLock(false); })
+    .catch(function(){ /* stay hidden */ });
 })();
 </script>
 </body>
