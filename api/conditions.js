@@ -43,6 +43,9 @@ module.exports = async (req, res) => {
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
   const given = (body && body.password) || '';
 
+  // No password at all is "locked" -- that's the page asking whether the
+  // panel is live. A non-empty wrong one is a genuine failed attempt.
+  if (!given) return send(res, { ok: false, reason: 'locked' });
   if (given !== expected) return send(res, { ok: false, reason: 'bad_password' });
 
   try {

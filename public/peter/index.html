@@ -511,10 +511,9 @@
    The data is password-gated on the server, so this code only ever shows
    what the API agrees to hand over. Nothing sensitive lives in this file.
 
-   The panel stays completely hidden for ordinary visitors. It appears for
-   someone who has unlocked it before on this device, or for anyone landing
-   on /peter#conditions -- so a buyer browsing the listing never sees a
-   password box on it. */
+   The password box sits on the listing page itself -- one page, one URL.
+   Before showing it we ask the server whether the panel is actually live,
+   so a visitor never meets a password box that could not have worked. */
 (function(){
   var box  = document.getElementById('live');
   var lock = document.getElementById('liveLock');
@@ -622,11 +621,13 @@
           if (!quiet) showLock(true);
           return false;
         }
-        // Feed down, no data, or stale: show nothing rather than an error.
-        if (!quiet) showLock(false);
+        // Locked is the one case worth offering a password box for.
+        if (d && d.reason === 'locked') { if (!quiet) showLock(false); return false; }
+        // Anything else -- feed down, no data, stale, misconfigured -- shows
+        // nothing at all rather than a box that cannot succeed.
         return false;
       })
-      .catch(function(){ if (!quiet) showLock(false); return false; });
+      .catch(function(){ return false; });
   }
 
   document.getElementById('livePwGo').addEventListener('click', function(){
@@ -638,12 +639,22 @@
 
   var saved = null;
   try { saved = localStorage.getItem(KEY); } catch (e) {}
-  var invited = location.hash === '#conditions';
 
   if (saved) {
-    attempt(saved, !invited).then(function(ok){ if (!ok && invited) showLock(false); });
-  } else if (invited) {
-    showLock(false);
+    // A remembered password unlocks straight away; if it no longer works,
+    // attempt() falls through to the password box.
+    attempt(saved, false);
+  } else {
+    // Ask, with no password, purely to learn whether the panel is live.
+    // The server answers "locked" and hands over nothing.
+    fetch('/api/conditions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){ if (d && (d.reason === 'locked' || d.reason === 'bad_password')) showLock(false); })
+      .catch(function(){ /* stay hidden */ });
   }
 })();
 </script>
