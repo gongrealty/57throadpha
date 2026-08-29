@@ -59,8 +59,13 @@ module.exports = async (req, res) => {
 };
 
 function send(res, body) {
-  // Cached at the edge for 5 minutes; readings only update hourly.
-  res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=3600');
+  // Good readings cache for 5 minutes -- they only update hourly anyway.
+  // Failures cache for 1 minute, so a hiccup doesn't keep the pill hidden
+  // long after the feed has recovered.
+  res.setHeader(
+    'Cache-Control',
+    body.ok ? 's-maxage=300, stale-while-revalidate=3600' : 's-maxage=60'
+  );
   res.setHeader('Content-Type', 'application/json');
   res.status(200).send(JSON.stringify(body));
 }
