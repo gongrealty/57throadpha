@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<base href="/peter/">
+<base href="/">
 <title>87-14 57th Road, Penthouse A &mdash; Elmhurst Duplex Condo for Sale</title>
 
 <meta name="description" content="87-14 57th Road, Penthouse A — a rare top-floor duplex penthouse condo in Elmhurst, Queens. 3 bed / 2 bath, 1,232 sq ft over two levels, private terrace with protected skyline views. $800,000. Listed by Ian Gong, Casa Blanca.">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<link rel="canonical" href="https://57throadpha.com/peter">
+<link rel="canonical" href="https://57throadpha.com/">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://57throadpha.com/peter">
+<meta property="og:url" content="https://57throadpha.com/">
 <meta property="og:title" content="87-14 57th Road, Penthouse A — Elmhurst Duplex Condo">
 <meta property="og:description" content="Top-floor duplex penthouse in Elmhurst, Queens. 3 bed / 2 bath, 1,232 sq ft, private terrace, protected skyline views. $800,000.">
-<meta property="og:image" content="https://57throadpha.com/peter/assets/photo-1.jpg">
+<meta property="og:image" content="https://57throadpha.com/assets/photo-1.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -72,6 +72,15 @@
   .dots{position:absolute;left:0;right:0;bottom:20px;z-index:4;display:flex;justify-content:center;gap:8px}
   .dots button{width:8px;height:8px;border-radius:50%;border:0;background:rgba(255,255,255,.42);cursor:pointer;padding:0;transition:background .3s,transform .3s}
   .dots button.on{background:#fff;transform:scale(1.35)}
+  /* Listing status, centred over the hero. On phones it moves to the left
+     so it cannot collide with the agent card pinned top-right. */
+  .status-flag{position:absolute;top:26px;left:50%;transform:translateX(-50%);z-index:5;
+    display:inline-flex;align-items:center;gap:9px;
+    background:rgba(18,14,11,.55);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+    border:1px solid rgba(233,201,138,.42);border-radius:999px;padding:9px 18px;
+    color:#e9c98a;font-size:11px;letter-spacing:.26em;text-transform:uppercase;white-space:nowrap}
+  .status-flag .pip{width:6px;height:6px;border-radius:50%;background:#e9c98a;
+    box-shadow:0 0 0 3px rgba(233,201,138,.22);flex:none}
   .hero .scrollcue{position:absolute;left:50%;bottom:44px;transform:translateX(-50%);z-index:4;color:#fff;opacity:.8;font-size:11px;letter-spacing:.25em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:8px;animation:bob 2.4s ease-in-out infinite}
   @keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,7px)}}
 
@@ -224,6 +233,8 @@
     .hero-info .price{margin-top:9px;font-size:21px}
     /* ~30% smaller card so it stops covering the photo; text stays legible */
     .agent-card{top:10px;right:10px;left:auto;bottom:auto;gap:7px;padding:6px 9px 6px 6px;max-width:166px;border-radius:10px;align-items:center}
+    .status-flag{top:10px;left:10px;transform:none;padding:6px 12px;font-size:9.5px;letter-spacing:.2em;gap:7px}
+    .status-flag .pip{width:5px;height:5px}
     .agent-card img{width:28px;height:28px;border-width:1.5px}
     .agent-card .who{line-height:1.22}
     .agent-card .who b{font-size:12px}
@@ -256,6 +267,8 @@
       <img class="slide" src="assets/photo-9.jpg" alt="Study with city views">
       <img class="slide" src="assets/photo-10.jpg" alt="Study with built-in shelving">
     </div>
+
+    <div class="status-flag"><span class="pip" aria-hidden="true"></span>Coming Soon</div>
 
     <div class="agent-card">
       <img src="assets/ian-headshot.jpg" alt="Ian Gong">

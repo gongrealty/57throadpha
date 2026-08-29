@@ -3,5 +3,17 @@
   "buildCommand": null,
   "installCommand": null,
   "outputDirectory": "public",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/peter",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/peter/:path*",
+      "destination": "/:path*",
+      "permanent": true
+    }
+  ]
 }
