@@ -3,15 +3,5 @@
   "buildCommand": null,
   "installCommand": null,
   "outputDirectory": "public",
-  "cleanUrls": true,
-  "rewrites": [
-    {
-      "source": "/peter",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/peter/",
-      "destination": "/index.html"
-    }
-  ]
+  "cleanUrls": true
 }
