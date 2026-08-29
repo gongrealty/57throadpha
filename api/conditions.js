@@ -10,6 +10,15 @@
 
 const HOUSE = '87-14 57th Rd PHA';
 
+// The sensors report generic names ("Thermo-hygrometer 2"), so map each
+// device to where it actually sits. Order runs as a vertical tour of the
+// duplex: lower level, the stair between them, then upper level.
+const LOCATIONS = {
+  '6BCA182CA33211F18581C97442FE546E': { label: 'Living Room',     order: 1 },
+  '2A8F1613A33211F1BA8CBDC7233A1CF9': { label: 'Spiral Staircase', order: 2 },
+  'C2FA9D69A33211F1BB6DC97442FE546E': { label: 'Primary Bedroom',  order: 3 },
+};
+
 // A reading older than this is reported as stale rather than shown as live.
 const STALE_AFTER_MS = 6 * 60 * 60 * 1000; // 6 hours
 
@@ -39,7 +48,22 @@ module.exports = async (req, res) => {
     if (!live.length) return send(res, { ok: false, reason: 'no_data' });
 
     const avg = (vals) => vals.reduce((a, b) => a + b, 0) / vals.length;
-    const tempC = avg(live.map((x) => Number(x.temp_c)));
+    const toF = (c) => Math.round((Number(c) * 9) / 5 + 32);
+
+    // An unmapped sensor still shows up, under whatever name X-Sense gave it,
+    // and sorts to the end rather than silently disappearing.
+    const sensors = live
+      .map((x) => {
+        const loc = LOCATIONS[x.device_id];
+        return {
+          label: loc ? loc.label : x.device_name,
+          order: loc ? loc.order : 99,
+          tempF: toF(x.temp_c),
+        };
+      })
+      .sort((a, b) => a.order - b.order)
+      .map(({ label, tempF }) => ({ label, tempF }));
+
     const hums = live.map((x) => Number(x.humidity)).filter((n) => !Number.isNaN(n));
     const newest = live
       .map((x) => new Date(x.ts).getTime())
@@ -47,7 +71,8 @@ module.exports = async (req, res) => {
 
     return send(res, {
       ok: true,
-      tempF: Math.round((tempC * 9) / 5 + 32),
+      sensors,
+      tempF: toF(avg(live.map((x) => Number(x.temp_c)))),
       humidity: hums.length ? Math.round(avg(hums)) : null,
       updatedAt: new Date(newest).toISOString(),
       stale: Date.now() - newest > STALE_AFTER_MS,

@@ -104,6 +104,11 @@
   .live.on{display:inline-flex}
   .live span{font-size:13.5px;color:#4a443c;letter-spacing:.02em}
   .live span b{color:var(--ink);font-weight:600}
+  .live .lede{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  /* display:contents lets each room sit in the pill's own flex row, so they
+     wrap one per line on a narrow screen instead of overflowing. */
+  .live .rooms{display:contents}
+  .live .rm i{font-style:normal;color:var(--muted);margin-right:4px}
   .live .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);padding:0;
     box-shadow:0 0 0 3px rgba(180,138,63,.18)}
   .live .ago{color:var(--muted);font-size:12.5px}
@@ -279,7 +284,8 @@
       </div>
       <div class="live" id="live" aria-live="polite">
         <span class="dot" aria-hidden="true"></span>
-        <span>Inside right now <b id="liveTemp">&mdash;</b></span>
+        <span class="lede">Inside right now</span>
+        <span class="rooms" id="liveRooms"></span>
         <span>Humidity <b id="liveHum">&mdash;</b></span>
         <span class="ago" id="liveAgo"></span>
       </div>
@@ -485,7 +491,25 @@
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(d){
       if (!d || !d.ok || d.stale) return;
-      document.getElementById('liveTemp').textContent = d.tempF + '°F';
+
+      var rooms = document.getElementById('liveRooms');
+      var list = (d.sensors && d.sensors.length) ? d.sensors
+               : [{ label: 'Inside', tempF: d.tempF }];
+      list.forEach(function(s){
+        var el = document.createElement('span');
+        el.className = 'rm';
+        var name = document.createElement('i');
+        name.textContent = s.label;
+        var val = document.createElement('b');
+        val.textContent = s.tempF + '°F';
+        el.appendChild(name);
+        // A real space, so screen readers say "Living Room, 80 degrees"
+        // rather than running the two together.
+        el.appendChild(document.createTextNode(' '));
+        el.appendChild(val);
+        rooms.appendChild(el);
+      });
+
       var hum = document.getElementById('liveHum');
       if (d.humidity === null) { hum.parentNode.style.display = 'none'; }
       else { hum.textContent = d.humidity + '%'; }
