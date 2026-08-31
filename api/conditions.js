@@ -77,7 +77,9 @@ module.exports = async (req, res) => {
     if (histRes.ok) {
       for (const h of await histRes.json()) {
         if (h.temp_c === null || h.temp_c === undefined) continue;
-        (history[h.device_id] = history[h.device_id] || []).push(toF(h.temp_c));
+        // Keep the timestamp alongside each reading so the page can label the
+        // high and low with the moment each was recorded.
+        (history[h.device_id] = history[h.device_id] || []).push({ f: toF(h.temp_c), ts: h.ts });
       }
     }
 
@@ -86,17 +88,27 @@ module.exports = async (req, res) => {
     const sensors = rows
       .map((x) => {
         const loc = LOCATIONS[x.device_id];
+        const hist = history[x.device_id] || [];
+        // High and low over the window, each with the time it was recorded.
+        let hiPt = null, loPt = null;
+        for (const p of hist) {
+          if (!hiPt || p.f > hiPt.f) hiPt = p;
+          if (!loPt || p.f < loPt.f) loPt = p;
+        }
+        const round1 = (v) => Math.round(v * 10) / 10;
         return {
           label: loc ? loc.label : x.device_name,
           order: loc ? loc.order : 99,
           // The sensors report 0.1C, which is finer than 0.1F, so a single
           // decimal here is real precision rather than invented digits.
-          tempF: Math.round(toF(x.temp_c) * 10) / 10,
-          history: (history[x.device_id] || []).map((v) => Math.round(v * 10) / 10),
+          tempF: round1(toF(x.temp_c)),
+          history: hist.map((p) => round1(p.f)),
+          hi: hiPt ? { tempF: round1(hiPt.f), at: hiPt.ts } : null,
+          lo: loPt ? { tempF: round1(loPt.f), at: loPt.ts } : null,
         };
       })
       .sort((a, b) => a.order - b.order)
-      .map(({ label, tempF, history }) => ({ label, tempF, history }));
+      .map(({ label, tempF, history, hi, lo }) => ({ label, tempF, history, hi, lo }));
 
     // One shared vertical scale across all three, so the lines stay
     // comparable -- a warmer floor should look warmer, not just differently
