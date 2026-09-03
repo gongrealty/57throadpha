@@ -2,16 +2,16 @@
 # Goes in .github/workflows/ of the repo. Needs four repo secrets:
 #   XSENSE_EMAIL, XSENSE_PASSWORD, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 #
-# Cadence note: this repo is PUBLIC, so Actions minutes are unlimited and the
-# schedule can run every 15 minutes. GitHub still delays/drops scheduled runs
-# under load (best-effort cron), but scheduling every 15 min lands enough runs
-# to keep the 24-hour high/low populated. Public repos also get higher
-# scheduling priority than private ones.
+# Cadence note: this repo is PUBLIC, so Actions minutes are unlimited. We run
+# every 30 minutes (:07 and :37) -- plenty for a slow-moving indoor temperature,
+# and it keeps the 24-hour high/low populated. GitHub still delays/drops
+# scheduled runs under load (best-effort cron); two attempts an hour keeps
+# readings landing even when one is skipped.
 name: X-Sense sensor collect
 
 on:
   schedule:
-    - cron: "*/15 * * * *"   # every 15 minutes (UTC)
+    - cron: "7,37 * * * *"   # every 30 minutes, at :07 and :37 past (UTC)
   workflow_dispatch:         # lets you run it by hand from the Actions tab
 
 concurrency:
