@@ -96,19 +96,30 @@ module.exports = async (req, res) => {
           if (!loPt || p.f < loPt.f) loPt = p;
         }
         const round1 = (v) => Math.round(v * 10) / 10;
+        // Report hi/lo whenever there are at least two readings to compare.
+        // The page decides how to show it: a real spread as H/L, an unchanged
+        // value as "steady", and a single reading as "range building". The
+        // distinct timestamps (firstAt/lastAt) let the page tell how much
+        // history actually backs the numbers.
+        const hasHistory = hist.length >= 2;
         return {
           label: loc ? loc.label : x.device_name,
           order: loc ? loc.order : 99,
           // The sensors report 0.1C, which is finer than 0.1F, so a single
           // decimal here is real precision rather than invented digits.
           tempF: round1(toF(x.temp_c)),
+          at: x.ts,
+          points: hist.length,
+          firstAt: hist.length ? hist[0].ts : null,
+          lastAt: hist.length ? hist[hist.length - 1].ts : null,
           history: hist.map((p) => round1(p.f)),
-          hi: hiPt ? { tempF: round1(hiPt.f), at: hiPt.ts } : null,
-          lo: loPt ? { tempF: round1(loPt.f), at: loPt.ts } : null,
+          hi: hasHistory && hiPt ? { tempF: round1(hiPt.f), at: hiPt.ts } : null,
+          lo: hasHistory && loPt ? { tempF: round1(loPt.f), at: loPt.ts } : null,
         };
       })
       .sort((a, b) => a.order - b.order)
-      .map(({ label, tempF, history, hi, lo }) => ({ label, tempF, history, hi, lo }));
+      .map(({ label, tempF, at, points, firstAt, lastAt, history, hi, lo }) =>
+        ({ label, tempF, at, points, firstAt, lastAt, history, hi, lo }));
 
     // One shared vertical scale across all three, so the lines stay
     // comparable -- a warmer floor should look warmer, not just differently

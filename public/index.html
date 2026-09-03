@@ -137,6 +137,10 @@
   .rm{display:grid;grid-template-columns:1fr auto 84px auto;align-items:center;gap:16px}
   .rm i{font-style:normal;font-size:13.5px;color:#3f4c58;letter-spacing:.02em}
   .rm b{font-size:13.5px;color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+  .rm-temp{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05}
+  .rm-when{font-size:9px;color:#93a0ac;margin-top:3px;white-space:nowrap;letter-spacing:.01em}
+  .rm-building{justify-self:end;text-align:right;font-size:9.5px;font-style:italic;
+    color:#9aa6b2;white-space:nowrap;font-variant-numeric:tabular-nums}
   .rm svg{width:84px;height:20px;display:block;overflow:visible}
   .rm polyline{fill:none;stroke:var(--live-accent);stroke-width:1.5;stroke-linecap:round;
     stroke-linejoin:round}
@@ -574,6 +578,17 @@
     return days === 1 ? 'yesterday' : days + ' days ago';
   }
 
+  // Compact age ("27 min ago") for the per-reading freshness line.
+  function agoShort(iso){
+    var m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+    if (m < 1)  return 'just now';
+    if (m < 60) return m + ' min ago';
+    var h = Math.round(m / 60);
+    if (h < 24) return h + (h === 1 ? ' hr ago' : ' hrs ago');
+    var dys = Math.round(h / 24);
+    return dys + (dys === 1 ? ' day ago' : ' days ago');
+  }
+
   // Clock time in the property's own timezone (Elmhurst, Queens), so a viewer
   // anywhere reads when the high/low actually happened on site, not locally.
   function clock(iso){
@@ -624,13 +639,24 @@
       var name = document.createElement('i');
       name.textContent = s.label;
 
+      // Current reading, with how long ago it landed right beneath it, so a
+      // stale or dropped sensor is obvious at a glance.
+      var tempCell = document.createElement('div');
+      tempCell.className = 'rm-temp';
       var val = document.createElement('b');
       // toFixed keeps a trailing .0, so the column stays aligned when a
       // reading lands on a whole degree.
       val.textContent = Number(s.tempF).toFixed(1) + '°F';
+      tempCell.appendChild(val);
+      if (s.at) {
+        var when = document.createElement('span');
+        when.className = 'rm-when';
+        when.textContent = agoShort(s.at);
+        tempCell.appendChild(when);
+      }
 
       row.appendChild(name);
-      row.appendChild(val);
+      row.appendChild(tempCell);
 
       // With fewer than two readings there is no line to draw. Leave the
       // column empty rather than explaining the absence.
@@ -638,12 +664,24 @@
       if (spark) row.appendChild(spark);
 
       // High and low over the window, each tagged with the time recorded.
-      if (s.hi && s.lo) {
+      // Three honest states: a real spread shows as H/L; readings that never
+      // moved show as "steady" with the count backing it; and a lone reading
+      // shows as "building" — so a flat panel can't be mistaken for a range.
+      if (s.hi && s.lo && s.hi.tempF !== s.lo.tempF) {
         var hilo = document.createElement('div');
         hilo.className = 'rm-hilo';
         hilo.appendChild(hiloLine('H', s.hi));
         hilo.appendChild(hiloLine('L', s.lo));
         row.appendChild(hilo);
+      } else {
+        var note = document.createElement('div');
+        note.className = 'rm-hilo rm-building';
+        if (s.hi && s.lo) {
+          note.textContent = 'Steady ' + Number(s.hi.tempF).toFixed(1) + '° · ' + (s.points || 0) + ' readings/24h';
+        } else {
+          note.textContent = '24-hr range building…';
+        }
+        row.appendChild(note);
       }
 
       rows.appendChild(row);
