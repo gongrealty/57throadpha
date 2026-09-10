@@ -10,6 +10,7 @@ Required environment variables (GitHub repo secrets):
 import os
 import sys
 import json
+import time
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -54,6 +55,38 @@ def supabase(method, path, body=None, extra_headers=None):
         return err.code, err.read().decode("utf-8")
 
 
+# --- Waking the base station ------------------------------------------------
+# The X-Sense cloud only holds a "last reported" snapshot per sensor. Left alone
+# that snapshot goes stale for hours; the phone app looks live because, when you
+# open it, it sends an "appTempData" request that tells the base station to start
+# reporting current readings. A passive read never sends that, so it re-reads the
+# same frozen value. We replicate the app's request here (over HTTP, via the same
+# shadow-update the app publishes over MQTT), then poll until the value refreshes.
+WAKE_SHADOW = "2nd_apptempdata"   # shadow the app writes to trigger live reporting
+WAKE_TIMEOUT_MIN = "5"            # ask the station to keep reporting for 5 minutes
+POLL_TRIES = 8                    # how many times to re-read after waking
+POLL_DELAY_S = 3                  # seconds between re-reads (max ~24s of waiting)
+
+
+def wake_station(x, station):
+    """Send the app's 'appTempData' request so the base station reports live."""
+    device_sns = [d.sn for d in station.devices.values()]
+    payload = {"state": {"desired": {
+        "shadow": "appTempData",
+        "deviceSN": device_sns,
+        "timeoutM": WAKE_TIMEOUT_MIN,
+        "stationSN": station.sn,
+        "userId": getattr(x, "userid", "") or "",
+        "time": datetime.now().strftime("%Y%m%d%H%M%S"),
+    }}}
+    return x.do_thing(station, WAKE_SHADOW, payload)
+
+
+def _temps(station):
+    """Current temp per device sn -- used to detect when a fresh read lands."""
+    return {dev.sn: (dev.data or {}).get("temperature") for dev in station.devices.values()}
+
+
 def collect():
     x = XSense()
     x.init()
@@ -63,11 +96,37 @@ def collect():
     rows = []
     for house in x.houses.values():
         for station in house.stations.values():
+            # First read: primes the device list and captures the starting
+            # (possibly stale) values so we can tell when fresh data arrives.
             try:
                 x.get_state(station)
             except Exception as err:  # noqa: BLE001
                 print(f"WARN: could not read station {station.sn}: {err}")
                 continue
+
+            before = _temps(station)
+            print(f"station {station.sn} ({station.type}) before wake: {before}")
+
+            # Wake the base station, then poll until the readings change.
+            try:
+                res = wake_station(x, station)
+                print(f"  wake sent to {len(before)} device(s); response: {str(res)[:200]}")
+            except Exception as err:  # noqa: BLE001
+                print(f"  WARN: wake request failed: {err}")
+
+            for attempt in range(POLL_TRIES):
+                time.sleep(POLL_DELAY_S)
+                try:
+                    x.get_state(station)
+                except Exception as err:  # noqa: BLE001
+                    print(f"  poll {attempt + 1}: read error {err}")
+                    continue
+                now = _temps(station)
+                changed = any(now.get(sn) != before.get(sn) for sn in now)
+                secs = (attempt + 1) * POLL_DELAY_S
+                print(f"  poll {attempt + 1} (+{secs}s): {now}" + ("  <-- refreshed" if changed else ""))
+                if changed:
+                    break
 
             for device in station.devices.values():
                 d = device.data or {}
