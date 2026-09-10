@@ -57,34 +57,63 @@ def supabase(method, path, body=None, extra_headers=None):
 
 # --- Waking the base station ------------------------------------------------
 # The X-Sense cloud only holds a "last reported" snapshot per sensor. Left alone
-# that snapshot goes stale for hours; the phone app looks live because, when you
-# open it, it sends an "appTempData" request that tells the base station to start
-# reporting current readings. A passive read never sends that, so it re-reads the
-# same frozen value. We replicate the app's request here (over HTTP, via the same
-# shadow-update the app publishes over MQTT), then poll until the value refreshes.
-WAKE_SHADOW = "2nd_apptempdata"   # shadow the app writes to trigger live reporting
-WAKE_TIMEOUT_MIN = "5"            # ask the station to keep reporting for 5 minutes
-POLL_TRIES = 8                    # how many times to re-read after waking
-POLL_DELAY_S = 3                  # seconds between re-reads (max ~24s of waiting)
-
-
-def wake_station(x, station):
-    """Send the app's 'appTempData' request so the base station reports live."""
-    device_sns = [d.sn for d in station.devices.values()]
-    payload = {"state": {"desired": {
-        "shadow": "appTempData",
-        "deviceSN": device_sns,
-        "timeoutM": WAKE_TIMEOUT_MIN,
-        "stationSN": station.sn,
-        "userId": getattr(x, "userid", "") or "",
-        "time": datetime.now().strftime("%Y%m%d%H%M%S"),
-    }}}
-    return x.do_thing(station, WAKE_SHADOW, payload)
+# it goes stale for hours; the phone app looks live because, on open, it connects
+# to X-Sense's MQTT broker and publishes an "appTempData" request telling the base
+# station to report live for a few minutes. A plain HTTP read never sends that
+# (and the request is REFUSED over HTTP -- "Forbidden"; it only works over MQTT),
+# so it re-reads the frozen value. So we briefly join the same MQTT broker the app
+# uses, publish that request per station, then poll the HTTP read until it refreshes.
+WAKE_TIMEOUT_MIN = "5"     # ask each station to keep reporting for 5 minutes
+POLL_TRIES = 10            # times to re-read after waking
+POLL_DELAY_S = 3           # seconds between re-reads (max ~30s of waiting)
 
 
 def _temps(station):
     """Current temp per device sn -- used to detect when a fresh read lands."""
     return {dev.sn: (dev.data or {}).get("temperature") for dev in station.devices.values()}
+
+
+def _wake_payload(x, station):
+    return {"state": {"desired": {
+        "shadow": "appTempData",
+        "deviceSN": [d.sn for d in station.devices.values()],
+        "timeoutM": WAKE_TIMEOUT_MIN,
+        "stationSN": station.sn,
+        "userId": getattr(x, "userid", "") or "",
+        "time": datetime.now().strftime("%Y%m%d%H%M%S"),
+    }}}
+
+
+def _wake_topic(x, station):
+    # Reuse the library's own thing-name logic: the URL get_state reads is
+    # https://<region>.x-sense-iot.com/things/<thing>/shadow?name=2nd_mainpage,
+    # so <thing> is the exact name to address over MQTT too.
+    url, _ = x._thing_request(station, "2nd_mainpage")
+    thing = url.split("/things/", 1)[1].split("/shadow", 1)[0]
+    return f"$aws/things/{thing}/shadow/name/2nd_apptempdata/update"
+
+
+def wake_house(x, house):
+    """Join X-Sense's MQTT broker and publish the appTempData request for each
+    station, the same way the app does. Best-effort: any failure is logged and
+    swallowed so the HTTP read still runs."""
+    mh = house.mqtt                      # MQTTHelper: presigned WS client, TLS preset
+    mh.prepare_connect()
+    mh.client.connect(house.mqtt_server, 443)
+    mh.client.loop_start()
+    try:
+        time.sleep(1.5)                  # let the connection settle
+        for station in house.stations.values():
+            topic = _wake_topic(x, station)
+            info = mh.client.publish(topic, json.dumps(_wake_payload(x, station)), qos=0)
+            print(f"  wake -> {topic}  (rc={getattr(info, 'rc', '?')})")
+        time.sleep(2)                    # let the publishes flush
+    finally:
+        mh.client.loop_stop()
+        try:
+            mh.client.disconnect()
+        except Exception:  # noqa: BLE001
+            pass
 
 
 def collect():
@@ -95,36 +124,39 @@ def collect():
 
     rows = []
     for house in x.houses.values():
+        # First pass: prime each station's device list and record the starting
+        # (possibly stale) values so we can tell when fresh data arrives.
+        before = {}
         for station in house.stations.values():
-            # First read: primes the device list and captures the starting
-            # (possibly stale) values so we can tell when fresh data arrives.
             try:
                 x.get_state(station)
             except Exception as err:  # noqa: BLE001
                 print(f"WARN: could not read station {station.sn}: {err}")
                 continue
+            before[station.sn] = _temps(station)
+            print(f"station {station.sn} ({station.type}) before wake: {before[station.sn]}")
 
-            before = _temps(station)
-            print(f"station {station.sn} ({station.type}) before wake: {before}")
+        # Wake every station in the house over MQTT (the app's channel).
+        try:
+            wake_house(x, house)
+        except Exception as err:  # noqa: BLE001
+            print(f"WARN: MQTT wake failed ({err}); falling back to a plain read")
 
-            # Wake the base station, then poll until the readings change.
-            try:
-                res = wake_station(x, station)
-                print(f"  wake sent to {len(before)} device(s); response: {str(res)[:200]}")
-            except Exception as err:  # noqa: BLE001
-                print(f"  WARN: wake request failed: {err}")
-
+        # Poll the HTTP read until the values refresh.
+        for station in house.stations.values():
+            if station.sn not in before:
+                continue
             for attempt in range(POLL_TRIES):
                 time.sleep(POLL_DELAY_S)
                 try:
                     x.get_state(station)
                 except Exception as err:  # noqa: BLE001
-                    print(f"  poll {attempt + 1}: read error {err}")
+                    print(f"  poll {attempt + 1} ({station.sn}): read error {err}")
                     continue
                 now = _temps(station)
-                changed = any(now.get(sn) != before.get(sn) for sn in now)
+                changed = any(now.get(sn) != before[station.sn].get(sn) for sn in now)
                 secs = (attempt + 1) * POLL_DELAY_S
-                print(f"  poll {attempt + 1} (+{secs}s): {now}" + ("  <-- refreshed" if changed else ""))
+                print(f"  poll {attempt + 1} (+{secs}s) {station.sn}: {now}" + ("  <-- refreshed" if changed else ""))
                 if changed:
                     break
 
