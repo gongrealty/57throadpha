@@ -2,17 +2,18 @@
 # Goes in .github/workflows/ of the repo. Needs four repo secrets:
 #   XSENSE_EMAIL, XSENSE_PASSWORD, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 #
-# Cadence note: this repo is PUBLIC, so Actions minutes are unlimited. We run
-# every 30 minutes (:07 and :37) -- plenty for a slow-moving indoor temperature,
-# and it keeps the 24-hour high/low populated. GitHub still delays/drops
-# scheduled runs under load (best-effort cron); two attempts an hour keeps
-# readings landing even when one is skipped.
+# TRIGGERING: the reliable hourly trigger is an external Supabase pg_cron job
+# that calls this workflow's workflow_dispatch API on the hour (GitHub's own
+# scheduled cron proved unreliable -- it dropped ~85% of runs, leaving multi-hour
+# gaps). The `schedule` below is kept only as a best-effort backup so some data
+# still lands if the external trigger is ever down. Repo is PUBLIC = unlimited
+# Actions minutes, so an occasional extra run is harmless.
 name: X-Sense sensor collect
 
 on:
+  workflow_dispatch:         # the reliable path: fired hourly by Supabase pg_cron, and by hand
   schedule:
-    - cron: "7,37 * * * *"   # every 30 minutes, at :07 and :37 past (UTC)
-  workflow_dispatch:         # lets you run it by hand from the Actions tab
+    - cron: "17 * * * *"     # hourly backup only, at :17 past (UTC) -- best-effort
 
 concurrency:
   group: xsense-collect
