@@ -11,6 +11,7 @@ import os
 import sys
 import json
 import time
+import threading
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -66,6 +67,7 @@ def supabase(method, path, body=None, extra_headers=None):
 WAKE_TIMEOUT_MIN = "5"     # ask each station to keep reporting for 5 minutes
 POLL_TRIES = 10            # times to re-read after waking
 POLL_DELAY_S = 3           # seconds between re-reads (max ~30s of waiting)
+WAKE_MAX_SECONDS = 20      # hard cap on the MQTT wake so it can never hang a run
 
 
 def _temps(station):
@@ -97,23 +99,26 @@ def wake_house(x, house):
     """Join X-Sense's MQTT broker and publish the appTempData request for each
     station, the same way the app does. Best-effort: any failure is logged and
     swallowed so the HTTP read still runs."""
-    mh = house.mqtt                      # MQTTHelper: presigned WS client, TLS preset
-    mh.prepare_connect()
-    mh.client.connect(house.mqtt_server, 443)
-    mh.client.loop_start()
     try:
-        time.sleep(1.5)                  # let the connection settle
-        for station in house.stations.values():
-            topic = _wake_topic(x, station)
-            info = mh.client.publish(topic, json.dumps(_wake_payload(x, station)), qos=0)
-            print(f"  wake -> {topic}  (rc={getattr(info, 'rc', '?')})")
-        time.sleep(2)                    # let the publishes flush
-    finally:
-        mh.client.loop_stop()
+        mh = house.mqtt                  # MQTTHelper: presigned WS client, TLS preset
+        mh.prepare_connect()
+        mh.client.connect(house.mqtt_server, 443)
+        mh.client.loop_start()
         try:
-            mh.client.disconnect()
-        except Exception:  # noqa: BLE001
-            pass
+            time.sleep(1.5)              # let the connection settle
+            for station in house.stations.values():
+                topic = _wake_topic(x, station)
+                info = mh.client.publish(topic, json.dumps(_wake_payload(x, station)), qos=0)
+                print(f"  wake -> {topic}  (rc={getattr(info, 'rc', '?')})")
+            time.sleep(2)                # let the publishes flush
+        finally:
+            mh.client.loop_stop()
+            try:
+                mh.client.disconnect()
+            except Exception:  # noqa: BLE001
+                pass
+    except Exception as err:  # noqa: BLE001 -- never let a wake problem sink the run
+        print(f"  WARN: MQTT wake error: {err}")
 
 
 def collect():
@@ -136,11 +141,15 @@ def collect():
             before[station.sn] = _temps(station)
             print(f"station {station.sn} ({station.type}) before wake: {before[station.sn]}")
 
-        # Wake every station in the house over MQTT (the app's channel).
-        try:
-            wake_house(x, house)
-        except Exception as err:  # noqa: BLE001
-            print(f"WARN: MQTT wake failed ({err}); falling back to a plain read")
+        # Wake every station over MQTT (the app's channel), but never let a
+        # stuck MQTT connection hang the whole run: bound it in a daemon thread
+        # and fall through to the plain read if it overruns. A written row every
+        # 30 min matters more than a perfect wake, and the next run recovers.
+        waker = threading.Thread(target=wake_house, args=(x, house), daemon=True)
+        waker.start()
+        waker.join(WAKE_MAX_SECONDS)
+        if waker.is_alive():
+            print(f"  WARN: wake exceeded {WAKE_MAX_SECONDS}s; continuing with a plain read")
 
         # Poll the HTTP read until the values refresh.
         for station in house.stations.values():
