@@ -36,7 +36,7 @@ def env(name):
     return val
 
 
-def supabase(method, path, body=None, extra_headers=None):
+def supabase(method, path, body=None, extra_headers=None, retries=4):
     url = f"{env('SUPABASE_URL').rstrip('/')}/rest/v1/{path}"
     key = env("SUPABASE_SERVICE_ROLE_KEY")
     headers = {
@@ -48,12 +48,27 @@ def supabase(method, path, body=None, extra_headers=None):
         headers.update(extra_headers)
 
     data = json.dumps(body).encode("utf-8") if body is not None else None
-    req = urllib.request.Request(url, data=data, headers=headers, method=method)
-    try:
-        with urllib.request.urlopen(req, timeout=30) as res:
-            return res.status, res.read().decode("utf-8")
-    except urllib.error.HTTPError as err:
-        return err.code, err.read().decode("utf-8")
+
+    # Supabase occasionally answers a write with a transient 5xx (e.g. 504
+    # Gateway Timeout) or drops the connection. Retry a few times with backoff
+    # so one server hiccup doesn't fail the run and throw away a good reading.
+    last = (0, "")
+    for attempt in range(retries):
+        req = urllib.request.Request(url, data=data, headers=headers, method=method)
+        try:
+            with urllib.request.urlopen(req, timeout=30) as res:
+                return res.status, res.read().decode("utf-8")
+        except urllib.error.HTTPError as err:
+            last = (err.code, err.read().decode("utf-8"))
+            if err.code < 500:  # a 4xx is our fault -- retrying won't help
+                return last
+        except (urllib.error.URLError, TimeoutError, OSError) as err:
+            last = (0, str(err))
+        if attempt < retries - 1:
+            wait = 2 ** attempt  # 1s, 2s, 4s
+            print(f"  Supabase {method} /{path} attempt {attempt + 1} failed ({last[0]}); retrying in {wait}s")
+            time.sleep(wait)
+    return last
 
 
 # --- Waking the base station ------------------------------------------------
