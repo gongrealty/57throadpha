@@ -132,7 +132,17 @@
     var err = document.getElementById('loginErr'); err.textContent = '';
     var pw = document.getElementById('pw').value;
     fetch('/api/admin/session', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw}) })
-      .then(function(r){ if(r.ok){ document.getElementById('pw').value=''; load(); } else { err.textContent = 'Incorrect password.'; } })
+      .then(function(r){
+        if(r.ok){ document.getElementById('pw').value=''; load(); return; }
+        if(r.status === 401){
+          return r.json().then(function(j){
+            err.textContent = (j && j.configured === false)
+              ? 'No admin password is set on the server yet — add ADMIN_PASSWORD in Vercel and redeploy.'
+              : 'Incorrect password.';
+          }).catch(function(){ err.textContent = 'Incorrect password.'; });
+        }
+        err.textContent = 'Sign-in service not responding (status ' + r.status + ') — the deploy may still be building.';
+      })
       .catch(function(){ err.textContent = 'Something went wrong — try again.'; });
   });
 

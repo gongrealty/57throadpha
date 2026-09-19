@@ -13,7 +13,9 @@ module.exports = async (req, res) => {
   }
 
   const ok = !!(body && ADMIN_PASSWORD && body.password === ADMIN_PASSWORD);
-  if(!ok){ res.status(401).json({ ok:false }); return; }
+  // `configured` lets the login page distinguish "wrong password" from
+  // "ADMIN_PASSWORD isn't set in this deployment yet" (needs a redeploy).
+  if(!ok){ res.status(401).json({ ok:false, configured: !!ADMIN_PASSWORD }); return; }
   res.setHeader('Set-Cookie', `pha_admin=${makeToken()}; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=86400`);
   res.status(200).json({ ok:true });
 };
