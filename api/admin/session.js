@@ -34,6 +34,6 @@ module.exports = async (req, res) => {
   const token = makeToken();
   // Set a cookie too (belt and suspenders), but the token in the body is the
   // reliable path — the page stores it and sends it as a Bearer header.
-  res.setHeader('Set-Cookie', `pha_admin=${token}; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=86400${dom}`);
+  res.setHeader('Set-Cookie', `pha_admin=${token}; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=2592000${dom}`);
   res.status(200).json({ ok:true, token });
 };

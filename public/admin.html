@@ -262,16 +262,6 @@
       <div id="galGrid" class="galgrid"></div>
     </div>
 
-    <div class="panel">
-      <h2>Admin access log — who signed in here</h2>
-      <div class="scroll">
-        <table>
-          <thead><tr><th>Time</th><th>Result</th><th>IP address</th><th>Device</th></tr></thead>
-          <tbody id="adminAccess"></tbody>
-        </table>
-      </div>
-      <div class="pager" id="adminAccessPager"></div>
-    </div>
   </div>
 
 <script>
@@ -737,12 +727,6 @@
         '</strong> <span class="muted">'+esc(email)+'</span> <span class="muted" style="margin-left:auto">'+fmt(l.ts)+'</span></summary>'+
         '<dl class="fields">'+rows+'<dt>IP</dt><dd>'+ipCell(l.ip)+'</dd></dl>'+delBtn+'</details>';
     }).join('') : '<div class="empty">No leads yet. Showing requests and offers will appear here.</div>';
-
-    // admin access log — 5 per page
-    paginate('adminAccess', 'adminAccessPager', d.adminAccess || [], function(a){
-      return '<tr><td class="muted">'+fmt(a.ts)+'</td><td><span class="tag '+(a.ok?'ok':'fail')+'">'+(a.ok?'signed in':'failed')+
-        '</span></td><td>'+ipCell(a.ip)+'</td><td class="muted" style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(a.ua||'')+'</td></tr>';
-    }, 4, 'No admin sign-ins recorded yet.', 5);
 
     // visitors — sortable columns, 10 per page (default: most events first)
     visitorsData = d.visitors || [];

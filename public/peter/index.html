@@ -495,7 +495,8 @@
 <script>
 (function(){
   var TOTAL = 10;
-  var photos = []; for(var i=1;i<=TOTAL;i++) photos.push('assets/photo-'+i+'.jpg');
+  var DEFAULT_PHOTOS = []; for(var i=1;i<=TOTAL;i++) DEFAULT_PHOTOS.push('assets/photo-'+i+'.jpg');
+  var photos = DEFAULT_PHOTOS.slice();   // replaced below by the managed gallery when it has photos
 
   /* ---- hero auto slideshow ---- */
   var slides = Array.prototype.slice.call(document.querySelectorAll('#slides .slide'));
@@ -545,11 +546,15 @@
   /* ---- tour photo viewer ---- */
   var tImg = document.getElementById('tImg'), tNum = document.getElementById('tNum'), thumbs = document.getElementById('thumbs');
   var tIdx = 0;
-  photos.forEach(function(src, i){
-    var t = new Image(); t.src = src; t.alt = 'Photo '+(i+1); if(i===0) t.className='on';
-    t.addEventListener('click', function(){ showTour(i); });
-    thumbs.appendChild(t);
-  });
+  function buildThumbs(){
+    thumbs.innerHTML = '';
+    photos.forEach(function(src, i){
+      var t = new Image(); t.src = src; t.alt = 'Photo '+(i+1); if(i===tIdx) t.className='on';
+      t.addEventListener('click', function(){ showTour(i); });
+      thumbs.appendChild(t);
+    });
+  }
+  buildThumbs();
   function showTour(i){
     tIdx = (i + photos.length) % photos.length;
     tImg.src = photos[tIdx]; tNum.textContent = tIdx+1;
@@ -560,6 +565,14 @@
   }
   document.getElementById('tPrev').addEventListener('click', function(){ showTour(tIdx-1); });
   document.getElementById('tNext').addEventListener('click', function(){ showTour(tIdx+1); });
+
+  // Load the admin-managed gallery; if it has photos, they replace the built-in set
+  // (thumbnails, main viewer and lightbox all read the `photos` array). Falls back
+  // silently to the built-in photos if the gallery is empty or unreachable.
+  fetch('/api/photos').then(function(r){ return r.json(); }).then(function(d){
+    var list = (d && d.photos) ? d.photos.map(function(p){ return p.url; }).filter(Boolean) : [];
+    if(list.length){ photos = list; tIdx = 0; buildThumbs(); showTour(0); }
+  }).catch(function(){});
 
   /* ---- lightbox ---- */
   var lb = document.getElementById('lightbox'), lbImg = document.getElementById('lbImg');

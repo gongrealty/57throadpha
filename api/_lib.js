@@ -129,7 +129,7 @@ function parseCookies(req){
 
 // ---- stateless admin session (HMAC-signed cookie; works on serverless) ----
 function sign(v){ return crypto.createHmac('sha256', SESSION_SECRET).update(v).digest('hex'); }
-function makeToken(){ const exp = Date.now() + 86400000; return exp + '.' + sign(String(exp)); }
+function makeToken(){ const exp = Date.now() + 86400000 * 30; return exp + '.' + sign(String(exp)); }  // 30-day session
 function validToken(tok){
   if(!tok) return false;
   const i = tok.indexOf('.'); if(i < 0) return false;
