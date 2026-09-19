@@ -274,6 +274,39 @@
     .hl-grid{grid-template-columns:1fr}
     .hero-info h1{font-size:clamp(21px,6.4vw,30px)}
   }
+
+  /* ---------- sign-in tab + modal ---------- */
+  .signin-tab{position:fixed;left:0;top:50%;z-index:41;font:inherit;cursor:pointer;border:0;
+    background:var(--ink);color:var(--paper);padding:18px 12px;border-radius:0 9px 9px 0;
+    box-shadow:0 10px 30px rgba(0,0,0,.3);writing-mode:vertical-rl;letter-spacing:.22em;
+    text-transform:uppercase;font-size:11.5px;font-weight:600;
+    transform:translateY(-50%) translateX(-105%);opacity:0;pointer-events:none;
+    transition:transform .45s ease,opacity .45s ease,background .2s,color .2s}
+  .signin-tab.show{transform:translateY(-50%) translateX(0);opacity:1;pointer-events:auto}
+  .signin-tab:hover{background:var(--gold);color:#231a08}
+  .si-modal{position:fixed;inset:0;z-index:95;display:none;align-items:center;justify-content:center;padding:20px}
+  .si-modal.open{display:flex}
+  .si-modal .scrim{position:absolute;inset:0;background:rgba(15,12,8,.62);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+  .si-modal .card{position:relative;background:var(--paper);color:var(--ink);width:min(480px,100%);border-radius:8px;
+    padding:34px 32px;box-shadow:0 30px 80px rgba(0,0,0,.4);max-height:92vh;overflow:auto}
+  .si-modal h3{font-family:var(--serif);font-weight:400;font-size:26px;margin:0 0 4px}
+  .si-modal .lede{color:var(--muted);font-size:14px;margin-bottom:20px}
+  .si-modal .addr-tag{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:18px}
+  .si-modal label{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+  .si-modal label .opt{text-transform:none;letter-spacing:.02em;opacity:.75}
+  .si-modal input{width:100%;font:inherit;font-size:15px;padding:11px 13px;border:1px solid rgba(0,0,0,.18);border-radius:5px;background:#fff;color:var(--ink)}
+  .si-modal input:focus{outline:2px solid var(--gold);border-color:transparent}
+  .si-modal .row{display:flex;gap:12px}
+  .si-modal .row>div{flex:1}
+  .si-modal .submit{margin-top:22px;width:100%;font:inherit;cursor:pointer;border:0;background:var(--ink);color:var(--paper);
+    padding:14px;border-radius:5px;letter-spacing:.18em;text-transform:uppercase;font-size:12px;font-weight:600}
+  .si-modal .submit:hover{background:var(--gold);color:#231a08}
+  .si-modal .submit:disabled{opacity:.7;cursor:default}
+  .si-modal .x{position:absolute;top:14px;right:16px;border:0;background:none;font-size:24px;cursor:pointer;color:var(--muted);line-height:1}
+  .si-modal .thanks{text-align:center;padding:26px 0}
+  .si-modal .thanks .big{font-family:var(--serif);font-size:26px;margin-bottom:8px}
+  .si-modal .privacy-note{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.5}
+  .si-modal .form-error{color:#a5352f;background:#f6e4e2;border:1px solid #e3b7b2;font-size:13px;line-height:1.5;border-radius:6px;padding:10px 12px;margin-top:16px}
 </style>
 </head>
 <body>
@@ -743,6 +776,83 @@
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(d){ if (d && (d.reason === 'locked' || d.reason === 'bad_password')) showLock(false); })
     .catch(function(){ /* stay hidden */ });
+})();
+</script>
+
+<!-- ============ SIGN-IN ============ -->
+<button class="signin-tab" id="signinTab" aria-label="Sign in">Sign&nbsp;In</button>
+<div class="si-modal" id="m-signin" role="dialog" aria-modal="true" aria-label="Sign in">
+  <div class="scrim" data-close></div>
+  <div class="card">
+    <button class="x" data-close aria-label="Close">&times;</button>
+    <div class="addr-tag">87&ndash;14 57th Road, Penthouse A</div>
+    <h3>Sign in</h3>
+    <div class="lede">Leave your details and we&rsquo;ll send you the listing highlights right away.</div>
+    <form id="signinForm">
+      <label>Date</label><input name="date" type="date" required>
+      <div class="row">
+        <div><label>Your name</label><input name="client_name" required></div>
+        <div><label>Your agent <span class="opt">(if any)</span></label><input name="agent_name"></div>
+      </div>
+      <label>Email</label><input name="email" type="email" required>
+      <label>Phone</label><input name="phone" type="tel" required>
+      <div class="form-error" hidden></div>
+      <button class="submit" type="submit">Sign in</button>
+      <div class="privacy-note">Your details are shared with the seller&rsquo;s agent, Ian Gong (Casa Blanca) only.</div>
+    </form>
+    <div class="thanks" hidden>
+      <div class="big">You&rsquo;re signed in.</div>
+      <p>Check your inbox &mdash; we&rsquo;ve sent the highlights over.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- sign-in tab + form ---------- */
+(function(){
+  var tab = document.getElementById('signinTab');
+  var modal = document.getElementById('m-signin');
+  var form = document.getElementById('signinForm');
+  if(!tab || !modal || !form) return;
+
+  // reveal the tab once the visitor starts scrolling
+  function toggle(){ tab.classList.toggle('show', window.pageYOffset > 320); }
+  window.addEventListener('scroll', toggle, {passive:true}); toggle();
+
+  function open(){ modal.classList.add('open'); }
+  function close(){ modal.classList.remove('open'); }
+  tab.addEventListener('click', open);
+  modal.addEventListener('click', function(e){ if(e.target.hasAttribute('data-close')) close(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') close(); });
+
+  // default the date to today (local, not UTC)
+  var d = new Date();
+  var iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  var dateEl = form.querySelector('[name="date"]');
+  if(dateEl && !dateEl.value) dateEl.value = iso;
+
+  var errEl = form.querySelector('.form-error');
+  function showErr(m){ errEl.textContent = m; errEl.hidden = false; }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    errEl.hidden = true;
+    var data = {}; new FormData(form).forEach(function(v,k){ data[k] = v; });
+
+    var phone = (data.phone || '').replace(/\D/g,'');
+    if(phone.length !== 10 || phone.charAt(0) === '0'){
+      showErr('Please enter a valid 10-digit phone number (it can’t start with 0).'); return;
+    }
+
+    var btn = form.querySelector('.submit');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    fetch('/api/signin', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) })
+      .catch(function(){})
+      .finally(function(){
+        form.hidden = true;
+        form.parentElement.querySelector('.thanks').hidden = false;
+      });
+  });
 })();
 </script>
 </body>

@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Sign-ins — 87-14 57th Rd PHA</title>
+<style>
+  :root{ --ink:#14110e; --paper:#f6f1e9; --card:#fffdf9; --muted:#8a8178; --gold:#b48a3f; --line:rgba(0,0,0,.12);
+    --serif:Georgia,"Times New Roman",serif; --sans:"Helvetica Neue",Arial,sans-serif; }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1040px;margin:0 auto;padding:26px 20px 60px}
+  a{color:inherit}
+
+  /* login */
+  .login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .login .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:32px 30px;width:min(400px,100%);box-shadow:0 20px 60px rgba(0,0,0,.12)}
+  .login .k{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin:0 0 6px}
+  .login h1{font-family:var(--serif);font-weight:400;font-size:24px;margin:0 0 20px}
+  .login input{width:100%;font:inherit;font-size:15px;padding:12px 13px;border:1px solid rgba(0,0,0,.2);border-radius:6px;background:#fff}
+  .login button{margin-top:14px;width:100%;font:inherit;font-weight:600;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    padding:13px;border:0;border-radius:6px;background:var(--ink);color:var(--paper);cursor:pointer}
+  .login button:hover{background:var(--gold);color:#231a08}
+  .err{color:#a5352f;font-size:13px;margin-top:12px;min-height:16px}
+
+  /* dashboard */
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:22px}
+  header .k{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin:0 0 4px}
+  header h1{font-family:var(--serif);font-weight:400;font-size:26px;margin:0}
+  header .sub{color:var(--muted);font-size:13.5px;margin-top:4px}
+  .logout{font:inherit;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:none;border:1px solid var(--line);border-radius:6px;padding:8px 14px;cursor:pointer}
+  .logout:hover{border-color:var(--gold);color:var(--ink)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap;background:#faf6ee}
+  tr:last-child td{border-bottom:0}
+  td b{font-weight:600}
+  td .when{color:var(--muted);font-size:12px;white-space:nowrap}
+  td a.mail{color:#8a6a1e;text-decoration:none}
+  td a.mail:hover{text-decoration:underline}
+  .agent-none{color:#b9b1a6}
+  .del{font:inherit;font-size:12px;color:#a5352f;background:none;border:1px solid #e3c7c3;border-radius:5px;padding:5px 10px;cursor:pointer;white-space:nowrap}
+  .del:hover{background:#f6e4e2}
+  .empty{padding:40px 20px;text-align:center;color:var(--muted)}
+  .wrap-scroll{overflow-x:auto}
+  @media(max-width:640px){ th,td{padding:9px 10px} }
+</style>
+</head>
+<body>
+
+<!-- login gate -->
+<div class="login" id="login" hidden>
+  <div class="card">
+    <p class="k">Casa Blanca</p>
+    <h1>87-14 57th Rd PHA — Sign-ins</h1>
+    <form id="loginForm">
+      <input id="pw" type="password" placeholder="Password" autocomplete="current-password" aria-label="Password">
+      <button type="submit">Enter</button>
+      <div class="err" id="loginErr"></div>
+    </form>
+  </div>
+</div>
+
+<!-- dashboard -->
+<div class="wrap" id="dash" hidden>
+  <header>
+    <div>
+      <p class="k">Casa Blanca</p>
+      <h1>Sign-ins</h1>
+      <div class="sub" id="count">—</div>
+    </div>
+    <button class="logout" id="logout">Log out</button>
+  </header>
+  <div class="card">
+    <div class="wrap-scroll">
+      <table id="tbl">
+        <thead>
+          <tr><th>When</th><th>Visit date</th><th>Name</th><th>Agent</th><th>Email</th><th>Phone</th><th>IP</th><th></th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="empty" hidden>No sign-ins yet.</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var login = document.getElementById('login'), dash = document.getElementById('dash');
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];}); }
+  function when(iso){
+    try {
+      return new Date(iso).toLocaleString('en-US',{ timeZone:'America/New_York', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+    } catch(e){ return iso || ''; }
+  }
+
+  function show(which){ login.hidden = which!=='login'; dash.hidden = which!=='dash'; }
+
+  function render(leads){
+    document.getElementById('count').textContent = leads.length + (leads.length===1?' sign-in':' sign-ins');
+    var rows = document.getElementById('rows'), empty = document.getElementById('empty');
+    rows.innerHTML = '';
+    empty.hidden = leads.length > 0;
+    leads.forEach(function(l){
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td><span class="when">'+esc(when(l.ts))+'</span></td>'+
+        '<td>'+esc(l.date||'—')+'</td>'+
+        '<td><b>'+esc(l.name||'—')+'</b></td>'+
+        '<td>'+(l.agent?esc(l.agent):'<span class="agent-none">—</span>')+'</td>'+
+        '<td>'+(l.email?'<a class="mail" href="mailto:'+esc(l.email)+'">'+esc(l.email)+'</a>':'—')+'</td>'+
+        '<td>'+esc(l.phone||'—')+'</td>'+
+        '<td><span class="when">'+esc(l.ip||'')+'</span></td>'+
+        '<td><button class="del" data-id="'+esc(l.id)+'">Delete</button></td>';
+      rows.appendChild(tr);
+    });
+  }
+
+  function load(){
+    return fetch('/api/admin/data', { headers:{'Accept':'application/json'} })
+      .then(function(r){ if(r.status===401){ show('login'); return null; } return r.json(); })
+      .then(function(j){ if(j && j.ok){ show('dash'); render(j.leads||[]); } });
+  }
+
+  // login
+  document.getElementById('loginForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var err = document.getElementById('loginErr'); err.textContent = '';
+    var pw = document.getElementById('pw').value;
+    fetch('/api/admin/session', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw}) })
+      .then(function(r){ if(r.ok){ document.getElementById('pw').value=''; load(); } else { err.textContent = 'Incorrect password.'; } })
+      .catch(function(){ err.textContent = 'Something went wrong — try again.'; });
+  });
+
+  // logout
+  document.getElementById('logout').addEventListener('click', function(){
+    fetch('/api/admin/session', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'logout'}) })
+      .finally(function(){ show('login'); });
+  });
+
+  // delete (event-delegated)
+  document.getElementById('rows').addEventListener('click', function(e){
+    var btn = e.target.closest('.del'); if(!btn) return;
+    if(!confirm('Delete this sign-in permanently?')) return;
+    btn.disabled = true; btn.textContent = '…';
+    fetch('/api/admin/data', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'delete', id:btn.getAttribute('data-id')}) })
+      .then(function(r){ if(r.ok){ load(); } else { btn.disabled=false; btn.textContent='Delete'; alert('Could not delete.'); } })
+      .catch(function(){ btn.disabled=false; btn.textContent='Delete'; });
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>
