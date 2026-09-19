@@ -90,10 +90,13 @@ module.exports = async (req, res) => {
     .map(e => ({ ts:e.ts, ip:e.ip, ua:e.ua, ok: e.event === 'admin_login_ok' }));
 
   // "your own" IPs = any IP that has successfully signed into this admin panel
-  // (auto-captures each network you test from, no manual list to maintain)
-  const ownerIps = new Set(
-    allEvents.filter(e => e.event === 'admin_login_ok' && e.ip).map(e => e.ip)
-  );
+  // (auto-captures each network you test from, no manual list to maintain),
+  // plus a small manual seed for networks Ian browses from but hasn't logged in on.
+  const OWNER_IPS_SEED = ['160.72.129.18'];
+  const ownerIps = new Set([
+    ...allEvents.filter(e => e.event === 'admin_login_ok' && e.ip).map(e => e.ip),
+    ...OWNER_IPS_SEED
+  ]);
 
   // geolocate all IPs first (geo carries the datacenter flag we need for bot detection)
   const ipSet = new Set();
