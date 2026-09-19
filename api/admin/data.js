@@ -1,10 +1,12 @@
 // /api/admin/data — sign-in leads for the 87-14 PHA admin page (requires admin session).
 //   GET                            -> { ok, leads:[...] } newest first
 //   POST { action:'delete', id }   -> permanently remove one lead
-const { sbSelectAll, sbDelete, isAdmin, readBody } = require('../_lib');
+const { sbSelectAll, sbDelete, isAdmin, readBody, parseCookies } = require('../_lib');
 
 module.exports = async (req, res) => {
-  if(!isAdmin(req)){ res.status(401).json({ ok:false }); return; }
+  // sawSession lets the login page tell "cookie never arrived" (domain/scope
+  // problem) apart from "cookie arrived but was rejected" (secret mismatch).
+  if(!isAdmin(req)){ res.status(401).json({ ok:false, sawSession: !!parseCookies(req).pha_admin }); return; }
 
   if(req.method === 'POST'){
     const body = await readBody(req);

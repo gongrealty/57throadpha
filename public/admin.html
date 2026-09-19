@@ -128,13 +128,22 @@
     empty.hidden = false;
     empty.innerHTML = msg;
   }
-  function load(){
-    return fetch('/api/admin/data', { headers:{'Accept':'application/json'} })
+  function load(afterLogin){
+    return fetch('/api/admin/data', { credentials:'include', headers:{'Accept':'application/json'} })
       .then(function(r){
-        if(r.status === 401){ show('login'); return; }   // not signed in
+        if(r.status === 401){
+          if(afterLogin){   // login succeeded but the session didn't come back
+            return r.json().catch(function(){ return {}; }).then(function(j){
+              show('login');
+              document.getElementById('loginErr').innerHTML = (j && j.sawSession)
+                ? 'Signed in, but the server rejected the session token. Tell the developer (session-secret mismatch).'
+                : 'Password accepted, but your browser didn’t keep the login cookie. Open the site at the OTHER address — e.g. if you used <b>57throadpha.com/admin</b>, try <b>www.57throadpha.com/admin</b>.';
+            });
+          }
+          show('login'); return;
+        }
         return r.json().then(function(j){
           if(j && j.ok){ show('dash'); render(j.leads || []); return; }
-          // Signed in, but the read failed -- almost always the table is missing.
           tableHint('Signed in ✓ &mdash; but the leads table isn’t set up yet.<br>Run <b>scripts/pha_leads.sql</b> in the Supabase SQL editor, then reload this page.');
         }).catch(function(){
           tableHint('Signed in ✓ &mdash; but the leads service errored. Make sure the <b>pha_leads</b> table exists in Supabase.');
@@ -148,9 +157,9 @@
     e.preventDefault();
     var err = document.getElementById('loginErr'); err.textContent = '';
     var pw = document.getElementById('pw').value;
-    fetch('/api/admin/session', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw}) })
+    fetch('/api/admin/session', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw}) })
       .then(function(r){
-        if(r.ok){ document.getElementById('pw').value=''; load(); return; }
+        if(r.ok){ document.getElementById('pw').value=''; load(true); return; }
         if(r.status === 401){
           return r.json().then(function(j){
             err.textContent = (j && j.configured === false)
@@ -165,7 +174,7 @@
 
   // logout
   document.getElementById('logout').addEventListener('click', function(){
-    fetch('/api/admin/session', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'logout'}) })
+    fetch('/api/admin/session', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'logout'}) })
       .finally(function(){ show('login'); });
   });
 
@@ -174,7 +183,7 @@
     var btn = e.target.closest('.del'); if(!btn) return;
     if(!confirm('Delete this sign-in permanently?')) return;
     btn.disabled = true; btn.textContent = '…';
-    fetch('/api/admin/data', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'delete', id:btn.getAttribute('data-id')}) })
+    fetch('/api/admin/data', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'delete', id:btn.getAttribute('data-id')}) })
       .then(function(r){ if(r.ok){ load(); } else { btn.disabled=false; btn.textContent='Delete'; alert('Could not delete.'); } })
       .catch(function(){ btn.disabled=false; btn.textContent='Delete'; });
   });

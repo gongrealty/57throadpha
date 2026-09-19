@@ -7,8 +7,14 @@ module.exports = async (req, res) => {
   if(req.method !== 'POST'){ res.status(405).json({ ok:false }); return; }
   const body = await readBody(req);
 
+  // Scope the cookie to the registrable domain so the session works whether the
+  // visitor is on the apex (57throadpha.com) or www. -- otherwise a cookie set on
+  // one host isn't sent back on the other and every admin request looks logged-out.
+  const host = String(req.headers.host || '');
+  const dom = /(^|\.)57throadpha\.com$/i.test(host) ? '; Domain=.57throadpha.com' : '';
+
   if(body && body.action === 'logout'){
-    res.setHeader('Set-Cookie', 'pha_admin=; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=0');
+    res.setHeader('Set-Cookie', 'pha_admin=; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=0' + dom);
     res.status(200).json({ ok:true }); return;
   }
 
@@ -16,6 +22,6 @@ module.exports = async (req, res) => {
   // `configured` lets the login page distinguish "wrong password" from
   // "ADMIN_PASSWORD isn't set in this deployment yet" (needs a redeploy).
   if(!ok){ res.status(401).json({ ok:false, configured: !!ADMIN_PASSWORD }); return; }
-  res.setHeader('Set-Cookie', `pha_admin=${makeToken()}; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=86400`);
+  res.setHeader('Set-Cookie', `pha_admin=${makeToken()}; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=86400${dom}`);
   res.status(200).json({ ok:true });
 };
