@@ -3,5 +3,13 @@
   "buildCommand": null,
   "installCommand": null,
   "outputDirectory": "public",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/robots.txt",  "destination": "/api/seo?type=robots" },
+    { "source": "/sitemap.xml", "destination": "/api/seo?type=sitemap" }
+  ],
+  "headers": [
+    { "source": "/admin",      "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/admin.html", "headers": [{ "key": "Cache-Control", "value": "no-store" }] }
+  ]
 }

@@ -779,6 +779,24 @@
 })();
 </script>
 
+<script>
+/* ---------- lightweight visit tracking (feeds the /admin dashboard) ---------- */
+(function(){
+  var vid;
+  try { vid = localStorage.getItem('pha_vid'); if(!vid){ vid = Date.now().toString(36) + Math.random().toString(36).slice(2,10); localStorage.setItem('pha_vid', vid); } }
+  catch(e){ vid = 's' + Math.random().toString(36).slice(2,10); }
+  window.__phaVid = vid;
+  window.__phaTrack = function(event, section){
+    try {
+      var b = JSON.stringify({ vid:vid, event:event, section:section||null, path:location.pathname, ref:document.referrer||null });
+      if(navigator.sendBeacon){ navigator.sendBeacon('/api/track', new Blob([b], {type:'application/json'})); }
+      else { fetch('/api/track', {method:'POST', headers:{'Content-Type':'application/json'}, body:b, keepalive:true}); }
+    } catch(e){}
+  };
+  window.__phaTrack('pageview');
+})();
+</script>
+
 <!-- ============ SIGN-IN ============ -->
 <button class="signin-tab" id="signinTab" aria-label="Sign in">Sign&nbsp;In</button>
 <div class="si-modal" id="m-signin" role="dialog" aria-modal="true" aria-label="Sign in">
@@ -846,9 +864,11 @@
 
     var btn = form.querySelector('.submit');
     btn.disabled = true; btn.textContent = 'Signing in…';
+    data.vid = window.__phaVid || null;
     fetch('/api/signin', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) })
       .catch(function(){})
       .finally(function(){
+        if(window.__phaTrack) window.__phaTrack('signin', 'modal');
         form.hidden = true;
         form.parentElement.querySelector('.thanks').hidden = false;
       });

@@ -3,207 +3,761 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="robots" content="noindex, nofollow" />
-<title>Sign-ins — 87-14 57th Rd PHA</title>
+<title>Admin · 87-14 57th Road, Penthouse A</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <style>
-  :root{ --ink:#14110e; --paper:#f6f1e9; --card:#fffdf9; --muted:#8a8178; --gold:#b48a3f; --line:rgba(0,0,0,.12);
-    --serif:Georgia,"Times New Roman",serif; --sans:"Helvetica Neue",Arial,sans-serif; }
-  *{box-sizing:border-box}
-  [hidden]{display:none!important}   /* .login sets display:flex, which was overriding the hidden attribute */
-  body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased}
-  .wrap{max-width:1040px;margin:0 auto;padding:26px 20px 60px}
-  a{color:inherit}
+  :root{--ink:#14110e;--paper:#f6f1e9;--muted:#8a8178;--gold:#b48a3f;--line:rgba(0,0,0,.1);--card:#fff}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Helvetica Neue",Arial,sans-serif;background:#efe9df;color:var(--ink);-webkit-font-smoothing:antialiased}
+  .serif{font-family:Georgia,serif}
 
   /* login */
   .login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-  .login .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:32px 30px;width:min(400px,100%);box-shadow:0 20px 60px rgba(0,0,0,.12)}
-  .login .k{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin:0 0 6px}
-  .login h1{font-family:var(--serif);font-weight:400;font-size:24px;margin:0 0 20px}
-  .login input{width:100%;font:inherit;font-size:15px;padding:12px 13px;border:1px solid rgba(0,0,0,.2);border-radius:6px;background:#fff}
-  .login button{margin-top:14px;width:100%;font:inherit;font-weight:600;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
-    padding:13px;border:0;border-radius:6px;background:var(--ink);color:var(--paper);cursor:pointer}
-  .login button:hover{background:var(--gold);color:#231a08}
-  .err{color:#a5352f;font-size:13px;margin-top:12px;min-height:16px}
+  .login .box{background:var(--card);padding:40px 34px;border-radius:10px;width:min(380px,100%);box-shadow:0 20px 60px rgba(0,0,0,.15);text-align:center}
+  .login h1{font-family:Georgia,serif;font-weight:400;font-size:26px;margin-bottom:6px}
+  .login .k{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:22px}
+  .login input{width:100%;font:inherit;font-size:16px;padding:12px 14px;border:1px solid var(--line);border-radius:6px;margin-bottom:12px}
+  .login button{width:100%;font:inherit;cursor:pointer;border:0;background:var(--ink);color:var(--paper);padding:13px;border-radius:6px;letter-spacing:.16em;text-transform:uppercase;font-size:12px;font-weight:600}
+  .login .err{color:#b23b3b;font-size:13px;height:18px;margin-bottom:8px}
 
   /* dashboard */
-  header{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:22px}
-  header .k{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin:0 0 4px}
-  header h1{font-family:var(--serif);font-weight:400;font-size:26px;margin:0}
-  header .sub{color:var(--muted);font-size:13.5px;margin-top:4px}
-  .logout{font:inherit;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:none;border:1px solid var(--line);border-radius:6px;padding:8px 14px;cursor:pointer}
-  .logout:hover{border-color:var(--gold);color:var(--ink)}
+  .dash{display:none;max-width:1120px;margin:0 auto;padding:26px 22px 80px}
+  header.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px}
+  header.top .title{font-family:Georgia,serif;font-size:24px}
+  header.top .sub{font-size:12px;color:var(--muted);letter-spacing:.08em}
+  header.top .tools{display:flex;gap:10px;align-items:center}
+  header.top button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 16px;border-radius:20px;font-size:12px;letter-spacing:.08em}
 
-  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-  table{width:100%;border-collapse:collapse;font-size:13.5px}
-  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
-  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap;background:#faf6ee}
+  header.top .bot-toggle{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);letter-spacing:.04em;cursor:pointer;user-select:none;white-space:nowrap}
+  header.top .bot-toggle input{cursor:pointer;accent-color:var(--gold);width:15px;height:15px}
+  .bot-note{font-size:12px;color:var(--muted);margin:-14px 0 24px;letter-spacing:.02em}
+  .bot-note b{color:var(--ink);font-weight:600}
+  .bot-tag{display:inline-block;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:10px;background:#efe6da;color:#8a7a5e;vertical-align:1px}
+  .bot-tag.own{background:#e3ece0;color:#456a3f}
+  .crawl-count{font-size:12px;color:var(--muted);letter-spacing:.04em;white-space:nowrap}
+  .crawl-intro{font-size:13.5px;color:var(--muted);margin:-6px 0 20px;line-height:1.55}
+  .crawl-intro b{color:var(--ink);font-weight:600}
+  .crawl-cols{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  .crawl-h{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .crawl-row{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .crawl-row:last-child{border-bottom:0}
+  .crawl-dot{width:9px;height:9px;border-radius:50%;background:#d9d2c6;flex:none;transition:background .3s,box-shadow .3s}
+  .crawl-dot.on{background:#4f8a4f;box-shadow:0 0 0 3px rgba(79,138,79,.18)}
+  .crawl-name{flex:1;color:var(--ink)}
+  .crawl-row:not(.seen) .crawl-name{color:var(--muted)}
+  .crawl-when{font-size:11.5px;color:#3f7a3f;white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right}
+  .crawl-when.wait{color:var(--muted)}
+  .crawl-foot{font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.55}
+  @media(max-width:760px){ .crawl-cols{grid-template-columns:1fr;gap:8px} }
+  #visitorMap{height:440px;border-radius:10px;overflow:hidden;background:#e9eef1}
+  #visitorMap .leaflet-container{font:inherit}
+  #visitorMap .leaflet-tile{filter:grayscale(.72) brightness(1.05) contrast(.95)}  /* mute OSM into a light basemap */
+  .leaflet-popup-content{font-size:13px}
+  .map-empty{color:var(--muted);font-size:13px;padding:20px 0}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
+  .stat{background:var(--card);border-radius:10px;padding:20px 18px}
+  .stat .n{font-family:Georgia,serif;font-size:34px;line-height:1}
+  .stat .t{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+  .stat.lead .n{color:var(--gold)}
+
+  .panel{background:var(--card);border-radius:10px;padding:20px;margin-bottom:20px}
+  .panel h2{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .panel-head h2{margin-bottom:16px}
+  .range-pills{display:flex;gap:4px;background:#efe9df;border-radius:20px;padding:4px;margin-bottom:16px}
+  .range-pills button{border:0;background:none;font:inherit;cursor:pointer;padding:6px 13px;border-radius:16px;font-size:12px;letter-spacing:.04em;color:var(--muted);transition:background .2s,color .2s;white-space:nowrap}
+  .range-pills button.active{background:var(--ink);color:#fff}
+  .range-ctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .range-ctl .range-pills{margin-bottom:0}
+  .range-step{display:inline-flex;align-items:center;gap:2px;background:#efe9df;border-radius:20px;padding:4px}
+  .range-step[hidden]{display:none}
+  .range-step .step-btn{border:0;background:var(--card);color:var(--ink);width:26px;height:26px;border-radius:50%;font-size:17px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+  .range-step .step-btn:disabled{opacity:.3;cursor:default;box-shadow:none}
+  .range-step .step-val{font-size:12px;letter-spacing:.03em;color:var(--ink);min-width:72px;text-align:center;font-weight:600}
+  .pager{display:flex;align-items:center;justify-content:flex-end;gap:14px;margin-top:14px;font-size:12px}
+  .pager button{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;padding:6px 14px;border-radius:18px;font-size:12px;letter-spacing:.06em}
+  .pager button:disabled{opacity:.4;cursor:default}
+  .pager .pg-info{color:var(--muted);font-variant-numeric:tabular-nums}
+
+  .bars{display:flex;flex-direction:column;gap:10px}
+  .bar{display:grid;grid-template-columns:120px 1fr 44px;align-items:center;gap:12px;font-size:13px}
+  .bar .track{background:#eee;border-radius:6px;height:12px;overflow:hidden}
+  .bar .fill{height:100%;background:var(--gold);border-radius:6px}
+  .bar .cap{text-transform:capitalize}
+  .bar .val{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th.sortable{cursor:pointer;user-select:none;transition:color .15s}
+  th.sortable:hover{color:var(--ink)}
+  th.sortable.sorted{color:var(--ink)}
+  th .arrow{color:var(--gold);font-size:9px;margin-left:3px}
+  td{padding:9px 10px;border-bottom:1px solid #f0ece4;vertical-align:top}
   tr:last-child td{border-bottom:0}
-  td b{font-weight:600}
-  td .when{color:var(--muted);font-size:12px;white-space:nowrap}
-  td a.mail{color:#8a6a1e;text-decoration:none}
-  td a.mail:hover{text-decoration:underline}
-  .agent-none{color:#b9b1a6}
-  .del{font:inherit;font-size:12px;color:#a5352f;background:none;border:1px solid #e3c7c3;border-radius:5px;padding:5px 10px;cursor:pointer;white-space:nowrap}
-  .del:hover{background:#f6e4e2}
-  .empty{padding:40px 20px;text-align:center;color:var(--muted)}
-  .wrap-scroll{overflow-x:auto}
-  @media(max-width:640px){ th,td{padding:9px 10px} }
+  .ip{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+  .flag{display:inline-block;width:24px;height:18px;vertical-align:-4px;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.12);margin:0 2px;object-fit:cover}
+  .geoloc{color:var(--muted);font-size:12px;white-space:nowrap}
+  .lead-del{margin-top:12px;border:1px solid #e6c9c9;background:#fbf1f1;color:#a83b3b;cursor:pointer;
+    font:inherit;font-size:12px;letter-spacing:.04em;padding:6px 14px;border-radius:18px}
+  .lead-del:hover{background:#f5dede}
+  .lead-del:disabled{opacity:.5;cursor:default}
+  .tag{display:inline-block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:20px;background:#eee;color:#555}
+  .tag.offer{background:#f4e6c8;color:#8a6a1e}
+  .tag.price{background:#e7e0ef;color:#5a4a7a}
+  .tag.quote{background:#dde8ee;color:#3d6072}
+  .tag.signin{background:#e6ecdd;color:#4f6338}
+  .tag.showing{background:#e3ece0;color:#456a3f}
+  .tag.ok{background:#e3ece0;color:#456a3f}
+  .tag.fail{background:#f5dede;color:#a83b3b}
+  .pills{display:flex;flex-wrap:wrap;gap:5px}
+  .pill{font-size:10px;background:#f1ece2;border:1px solid var(--line);border-radius:20px;padding:2px 9px;text-transform:capitalize;color:#5a5248}
+  .muted{color:var(--muted)}
+  .scroll{overflow-x:auto}
+  .empty{color:var(--muted);font-size:13px;padding:8px 2px}
+  details.lead{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px}
+  details.lead summary{cursor:pointer;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px}
+  details.lead .fields{margin-top:12px;font-size:13px;display:grid;grid-template-columns:130px 1fr;gap:6px 14px}
+  details.lead .fields dt{color:var(--muted);text-transform:capitalize}
+  /* manage photos */
+  .gallery-tools{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+  .gbtn{display:inline-block;cursor:pointer;border:1px solid var(--line);background:var(--card);padding:9px 16px;border-radius:20px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+  .gbtn.upload{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .galgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .gcard{position:relative;border-radius:8px;overflow:hidden;background:#e8e2d6;aspect-ratio:3/2;border:1px solid var(--line)}
+  .gcard img{width:100%;height:100%;object-fit:cover;display:block}
+  .gcard .pos{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;font-variant-numeric:tabular-nums}
+  .gcard .gctl{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:center;padding:7px;background:linear-gradient(transparent,rgba(0,0,0,.55))}
+  .gcard .gctl button{border:0;cursor:pointer;width:28px;height:28px;border-radius:50%;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.92);color:#111}
+  .gcard .gctl .del{background:rgba(198,60,60,.94);color:#fff}
+  .gcard .moves{display:flex;gap:5px}
+  @media(max-width:760px){.cards{grid-template-columns:repeat(2,1fr)}.bar{grid-template-columns:90px 1fr 40px}.galgrid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 
-<!-- login gate -->
-<div class="login" id="login" hidden>
-  <div class="card">
-    <p class="k">Casa Blanca</p>
-    <h1>87-14 57th Rd PHA — Sign-ins</h1>
-    <form id="loginForm">
-      <input id="pw" type="password" placeholder="Password" autocomplete="current-password" aria-label="Password">
-      <button type="submit">Enter</button>
-      <div class="err" id="loginErr"></div>
-    </form>
+  <!-- LOGIN -->
+  <div class="login" id="login">
+    <div class="box">
+      <div class="k">Casa Blanca</div>
+      <h1>Listing Admin</h1>
+      <p class="muted" style="font-size:13px;margin:-2px 0 20px">87-14 57th Road, Penthouse A</p>
+      <form id="loginForm">
+        <div class="err" id="err"></div>
+        <input type="password" id="pw" placeholder="Admin password" autocomplete="current-password" required>
+        <button type="submit">Enter</button>
+      </form>
+    </div>
   </div>
-</div>
 
-<!-- dashboard -->
-<div class="wrap" id="dash" hidden>
-  <header>
-    <div>
-      <p class="k">Casa Blanca</p>
-      <h1>Sign-ins</h1>
-      <div class="sub" id="count">—</div>
+  <!-- DASHBOARD -->
+  <div class="dash" id="dash">
+    <header class="top">
+      <div>
+        <div class="title">Activity Dashboard</div>
+        <div class="sub">87-14 57th Road, Penthouse A · Elmhurst, Queens</div>
+      </div>
+      <div class="tools">
+        <span class="sub" id="updated"></span>
+        <label class="bot-toggle"><input type="checkbox" id="hideBots" checked> Hide bots &amp; crawlers</label>
+        <label class="bot-toggle"><input type="checkbox" id="hideSelf" checked> Hide Ian's visits</label>
+        <button id="refresh">Refresh</button>
+        <button id="logout">Log out</button>
+      </div>
+    </header>
+
+    <div class="cards">
+      <div class="stat"><div class="n" id="s-ips">0</div><div class="t">Unique IPs</div></div>
+      <div class="stat"><div class="n" id="s-views">0</div><div class="t">Page views</div></div>
+      <div class="stat"><div class="n" id="s-events">0</div><div class="t">Total events</div></div>
+      <div class="stat lead"><div class="n" id="s-leads">0</div><div class="t">Leads</div></div>
     </div>
-    <button class="logout" id="logout" hidden>Log out</button>
-  </header>
-  <div class="card">
-    <div class="wrap-scroll">
-      <table id="tbl">
-        <thead>
-          <tr><th>When</th><th>Visit date</th><th>Name</th><th>Agent</th><th>Email</th><th>Phone</th><th>IP</th><th></th></tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
+    <div class="bot-note" id="botNote"></div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Total traffic over time</h2>
+        <div class="range-ctl">
+          <div class="range-pills" id="trafficPills">
+            <button data-range="today">Today</button>
+            <button data-range="week" class="active">Week</button>
+            <button data-range="month">Month</button>
+            <button data-range="year">Year</button>
+          </div>
+          <div class="range-step" id="trafficStep" hidden>
+            <button class="step-btn" data-step="-1" type="button" aria-label="Shorter range">&minus;</button>
+            <span class="step-val" id="trafficStepVal">1 week</span>
+            <button class="step-btn" data-step="1" type="button" aria-label="Longer range">+</button>
+          </div>
+        </div>
+      </div>
+      <div id="traffic"></div>
     </div>
-    <div class="empty" id="empty" hidden>No sign-ins yet.</div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Search &amp; AI engine visibility</h2>
+        <span class="crawl-count" id="crawlCount"></span>
+      </div>
+      <p class="crawl-intro" id="crawlIntro"></p>
+      <div class="crawl-cols">
+        <div><div class="crawl-h">AI answer engines</div><div id="crawlAI" class="crawl-list"></div></div>
+        <div><div class="crawl-h">Search engines</div><div id="crawlSearch" class="crawl-list"></div></div>
+      </div>
+      <p class="crawl-foot">Each engine lights up the first time its crawler visits. New listings are typically found over days to weeks — the more this page is linked to and shared (MLS, StreetEasy, email, social), the faster.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Where visitors are — event heat map</h2>
+      <div id="visitorMap"></div>
+      <div class="map-empty" id="mapEmpty" hidden>No located visitors yet.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Section engagement</h2>
+      <div class="bars" id="bars"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Leads — showing requests &amp; offers</h2>
+      <div id="leads"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Recent activity</h2>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Time</th><th>IP</th><th>Event</th><th>Section</th></tr></thead>
+          <tbody id="recent"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="recentPager"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Visitors by IP</h2>
+      <div class="scroll">
+        <table id="visitorsTable">
+          <thead><tr>
+            <th class="sortable" data-sort="ip">IP address</th>
+            <th class="sortable" data-sort="events">Events</th>
+            <th>Sections viewed</th>
+            <th class="sortable" data-sort="first">First seen</th>
+            <th class="sortable" data-sort="last">Last seen</th>
+          </tr></thead>
+          <tbody id="visitors"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="visitorsPager"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Manage photos — main gallery</h2>
+      <div class="gallery-tools">
+        <label class="gbtn upload">+ Add photo(s)<input type="file" id="galAdd" accept="image/*" multiple hidden></label>
+        <span class="muted" id="galStatus"></span>
+      </div>
+      <p class="muted" style="font-size:12px;margin:-6px 0 14px">Uploads are auto-optimized. Use ‹ › to reorder, × to remove. Changes go live immediately.</p>
+      <div id="galGrid" class="galgrid"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Admin access log — who signed in here</h2>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Time</th><th>Result</th><th>IP address</th><th>Device</th></tr></thead>
+          <tbody id="adminAccess"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="adminAccessPager"></div>
+    </div>
   </div>
-</div>
 
 <script>
-(function(){
   var login = document.getElementById('login'), dash = document.getElementById('dash');
 
-  // Session token lives here (not a cookie), so nothing depends on domain scope.
+  // Session token lives in localStorage and is sent as a Bearer header, so the
+  // login doesn't depend on a cookie surviving the apex/www hop.
   function authHeaders(extra){
     var h = {}; for(var k in (extra||{})) h[k] = extra[k];
     try { var t = localStorage.getItem('pha_admin_token'); if(t) h['Authorization'] = 'Bearer ' + t; } catch(e){}
     return h;
   }
 
-  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];}); }
-  function when(iso){
-    try {
-      return new Date(iso).toLocaleString('en-US',{ timeZone:'America/New_York', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
-    } catch(e){ return iso || ''; }
+  function fmt(ts){ try{ return new Date(ts).toLocaleString(); }catch(e){ return ts; } }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  // ---- IP geolocation: flag image + city/state, keyed by IP (filled in render) ----
+  // Uses real flag PNGs (flagcdn.com) instead of emoji — Windows has no flag glyphs
+  // and would otherwise show the bare country code (US, GB).
+  var GEO = {};
+  function flagImg(cc){
+    if(!cc || cc.length !== 2) return '';
+    var c = cc.toLowerCase();
+    return '<img class="flag" src="https://flagcdn.com/24x18/'+c+'.png" '+
+      'srcset="https://flagcdn.com/48x36/'+c+'.png 2x" width="24" height="18" '+
+      'alt="'+esc(cc.toUpperCase())+'" loading="lazy" decoding="async">';
+  }
+  function geoLabel(ip){
+    var g = GEO[ip]; if(!g) return '';
+    var flag = flagImg(g.cc);
+    var loc = [g.city, g.region].filter(Boolean).join(', ');   // e.g. "Woodside, New York"
+    return (flag ? ' '+flag : '') +
+           (loc  ? ' <span class="geoloc">('+esc(loc)+')</span>' : '');
+  }
+  // an IP rendered as: monospace address + flag + (city, state)
+  function ipCell(ip){ return '<span class="ip">'+esc(ip)+'</span>'+geoLabel(ip); }
+
+  // the site's real sections, in scroll order, with clear buyer-facing names
+  var SECTIONS = [
+    { key:'hero',      label:'Drone Intro' },
+    { key:'overview',  label:'Overview' },
+    { key:'tour',      label:'Photos & Plans' },
+    { key:'community', label:'Community' },
+    { key:'interior',  label:'Home Tour' },
+    { key:'gallery',   label:'Gallery' },
+    { key:'location',  label:'Location' },
+    { key:'contact',   label:'Contact' }
+  ];
+  // key -> friendly label (same names as the Section engagement chart)
+  var SECTION_LABEL = {};
+  SECTIONS.forEach(function(s){ SECTION_LABEL[s.key] = s.label; });
+  function sectionName(key){ return SECTION_LABEL[key] || key; }
+
+  // ---- vertical bar chart (SVG) ----
+  function barChartSVG(data){
+    if(!data.length) return '<div class="empty">No section views yet.</div>';
+    var W=1000, H=300, padL=16, padR=16, padT=44, padB=52;
+    var plotH=H-padT-padB, baseY=padT+plotH, plotW=W-padL-padR;
+    var max=Math.max.apply(null,[1].concat(data.map(function(d){return d.count;})));
+    var band=plotW/data.length, bw=Math.min(120, band*0.62);
+    var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block">';
+    s+='<line x1="'+padL+'" y1="'+baseY+'" x2="'+(W-padR)+'" y2="'+baseY+'" stroke="rgba(0,0,0,.12)"/>';
+    data.forEach(function(d,i){
+      var cx=padL+band*i+band/2, x=cx-bw/2, h=d.count/max*plotH, y=baseY-h;
+      s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(0,h).toFixed(1)+'" rx="7" fill="#b48a3f"/>';
+      s+='<text x="'+cx.toFixed(1)+'" y="'+(y-12).toFixed(1)+'" text-anchor="middle" font-family="Georgia,serif" font-size="22" fill="#14110e">'+d.count+'</text>';
+      s+='<text x="'+cx.toFixed(1)+'" y="'+(baseY+28).toFixed(1)+'" text-anchor="middle" font-size="15" fill="#6f6558" letter-spacing=".3">'+esc(d.label)+'</text>';
+    });
+    return s+'</svg>';
   }
 
-  function show(which){ login.hidden = which!=='login'; dash.hidden = which!=='dash'; }
+  // ---- traffic line chart (SVG) ----
+  function fmtBucket(t,unit){
+    var d=new Date(t);
+    if(unit==='hour'){ var h=d.getHours(); return (h%12||12)+(h>=12?'p':'a'); }
+    if(unit==='month'){ return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]; }
+    return (d.getMonth()+1)+'/'+d.getDate();
+  }
+  function lineChartSVG(traffic, unit){
+    if(!traffic.length) return '<div class="empty">No traffic recorded yet.</div>';
+    var W=1000, H=280, padL=40, padR=20, padT=22, padB=44;
+    var plotH=H-padT-padB, plotW=W-padL-padR, n=traffic.length;
+    var max=Math.max.apply(null,[1].concat(traffic.map(function(d){return d.count;})));
+    var xf=function(i){ return padL + (n===1 ? plotW/2 : (i/(n-1))*plotW); };
+    var yf=function(c){ return padT + plotH - (c/max)*plotH; };
+    var pts=traffic.map(function(d,i){ return xf(i).toFixed(1)+','+yf(d.count).toFixed(1); });
+    var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block">';
+    // y gridlines + labels (0, mid, max)
+    var ys=[0, Math.round(max/2), max].filter(function(v,i,a){return a.indexOf(v)===i;});
+    ys.forEach(function(v){ var y=yf(v).toFixed(1);
+      s+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="rgba(0,0,0,.07)"/>';
+      s+='<text x="'+(padL-8)+'" y="'+(parseFloat(y)+4)+'" text-anchor="end" font-size="13" fill="#8a8178">'+v+'</text>';
+    });
+    // area + line
+    s+='<polygon fill="rgba(180,138,63,.13)" points="'+xf(0).toFixed(1)+','+(padT+plotH)+' '+pts.join(' ')+' '+xf(n-1).toFixed(1)+','+(padT+plotH)+'"/>';
+    s+='<polyline fill="none" stroke="#b48a3f" stroke-width="2.5" stroke-linejoin="round" points="'+pts.join(' ')+'"/>';
+    traffic.forEach(function(d,i){ s+='<circle cx="'+xf(i).toFixed(1)+'" cy="'+yf(d.count).toFixed(1)+'" r="3.5" fill="#b48a3f"/>'; });
+    // x labels (up to ~7)
+    var step=Math.max(1,Math.ceil(n/7));
+    traffic.forEach(function(d,i){ if(i%step===0 || i===n-1){
+      s+='<text x="'+xf(i).toFixed(1)+'" y="'+(H-14)+'" text-anchor="middle" font-size="13" fill="#8a8178">'+fmtBucket(d.t,unit)+'</text>';
+    }});
+    return s+'</svg>';
+  }
 
-  function render(leads){
-    document.getElementById('count').textContent = leads.length + (leads.length===1?' sign-in':' sign-ins');
-    var rows = document.getElementById('rows'), empty = document.getElementById('empty');
-    rows.innerHTML = '';
-    empty.hidden = leads.length > 0;
-    leads.forEach(function(l){
-      var tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td><span class="when">'+esc(when(l.ts))+'</span></td>'+
-        '<td>'+esc(l.date||'—')+'</td>'+
-        '<td><b>'+esc(l.name||'—')+'</b></td>'+
-        '<td>'+(l.agent?esc(l.agent):'<span class="agent-none">—</span>')+'</td>'+
-        '<td>'+(l.email?'<a class="mail" href="mailto:'+esc(l.email)+'">'+esc(l.email)+'</a>':'—')+'</td>'+
-        '<td>'+esc(l.phone||'—')+'</td>'+
-        '<td><span class="when">'+esc(l.ip||'')+'</span></td>'+
-        '<td><button class="del" data-id="'+esc(l.id)+'">Delete</button></td>';
-      rows.appendChild(tr);
+  // ---- total-traffic time-range logic (Today / Week / Month / Year) ----
+  var trafficTimes = [];      // raw pageview epoch-ms from the server
+  var trafficRange = 'week';  // default pill
+  var weekCount = 1, monthCount = 1;        // adjustable span
+  var RANGE_MAX = { week: 3, month: 6 };    // knobs: 1-3 weeks, 1-6 months
+  function computeTraffic(times, range, count){
+    count = count || 1;
+    var now = Date.now(), dNow = new Date(now);
+    var midnight = new Date(dNow.getFullYear(), dNow.getMonth(), dNow.getDate()).getTime();
+    var buckets = [], unit;
+    if(range === 'today'){
+      unit = 'hour';
+      for(var t = midnight; t <= now; t += 3600000) buckets.push({ t:t, end:t+3600000, count:0 });
+    } else if(range === 'week' || range === 'month'){
+      unit = 'day';
+      var days = (range === 'week' ? 7 : 30) * count;   // N weeks / N months back
+      for(var d = midnight - (days-1)*86400000; d <= midnight; d += 86400000) buckets.push({ t:d, end:d+86400000, count:0 });
+    } else { // year — last 12 calendar months
+      unit = 'month';
+      for(var i = 11; i >= 0; i--){
+        var st = new Date(dNow.getFullYear(), dNow.getMonth()-i, 1);
+        var en = new Date(dNow.getFullYear(), dNow.getMonth()-i+1, 1);
+        buckets.push({ t:st.getTime(), end:en.getTime(), count:0 });
+      }
+    }
+    if(buckets.length){
+      var lo = buckets[0].t;
+      times.forEach(function(tm){
+        if(tm < lo) return;
+        for(var b=0;b<buckets.length;b++){ if(tm >= buckets[b].t && tm < buckets[b].end){ buckets[b].count++; break; } }
+      });
+    }
+    return { series: buckets.map(function(b){ return { t:b.t, count:b.count }; }), unit: unit };
+  }
+  function trafficCount(){ return trafficRange === 'week' ? weekCount : trafficRange === 'month' ? monthCount : 1; }
+  function updateStepper(){
+    var step = document.getElementById('trafficStep');
+    if(!step) return;
+    var adjustable = trafficRange === 'week' || trafficRange === 'month';
+    step.hidden = !adjustable;
+    if(!adjustable) return;
+    var n = trafficCount(), unit = trafficRange, max = RANGE_MAX[unit];
+    document.getElementById('trafficStepVal').textContent = n + ' ' + unit + (n === 1 ? '' : 's');
+    step.querySelector('[data-step="-1"]').disabled = n <= 1;
+    step.querySelector('[data-step="1"]').disabled  = n >= max;
+  }
+  function renderTraffic(){
+    var r = computeTraffic(trafficTimes, trafficRange, trafficCount());
+    document.getElementById('traffic').innerHTML = lineChartSVG(r.series, r.unit);
+    var pills = document.getElementById('trafficPills');
+    if(pills) Array.prototype.forEach.call(pills.children, function(b){ b.classList.toggle('active', b.getAttribute('data-range') === trafficRange); });
+    updateStepper();
+  }
+  (function(){
+    var pills = document.getElementById('trafficPills');
+    if(pills) pills.addEventListener('click', function(e){
+      var b = e.target.closest('[data-range]'); if(!b) return;
+      trafficRange = b.getAttribute('data-range'); renderTraffic();
+    });
+    var step = document.getElementById('trafficStep');
+    if(step) step.addEventListener('click', function(e){
+      var b = e.target.closest('[data-step]'); if(!b || b.disabled) return;
+      var delta = parseInt(b.getAttribute('data-step'), 10);
+      if(trafficRange === 'week')       weekCount  = Math.min(RANGE_MAX.week,  Math.max(1, weekCount  + delta));
+      else if(trafficRange === 'month') monthCount = Math.min(RANGE_MAX.month, Math.max(1, monthCount + delta));
+      renderTraffic();
+    });
+  })();
+
+  // ---- generic table paginator (default 10 rows/page) ----
+  function paginate(bodyId, pagerId, rows, rowHtml, cols, emptyMsg, pageSize){
+    var body = document.getElementById(bodyId), pager = document.getElementById(pagerId);
+    var PAGE = pageSize || 10, page = 0;
+    function draw(){
+      var total = rows.length, pages = Math.max(1, Math.ceil(total/PAGE));
+      if(page > pages-1) page = pages-1;
+      var startI = page*PAGE, slice = rows.slice(startI, startI+PAGE);
+      body.innerHTML = slice.length ? slice.map(rowHtml).join('') : '<tr><td colspan="'+cols+'" class="empty">'+emptyMsg+'</td></tr>';
+      pager.innerHTML = total > PAGE
+        ? '<button data-pg="prev"'+(page===0?' disabled':'')+'>&#8249; Prev</button>'
+          + '<span class="pg-info">'+(startI+1)+'&ndash;'+Math.min(startI+PAGE,total)+' of '+total+'</span>'
+          + '<button data-pg="next"'+(page>=pages-1?' disabled':'')+'>Next &#8250;</button>'
+        : '';
+    }
+    pager.onclick = function(e){ var b=e.target.closest('[data-pg]'); if(!b||b.disabled) return; page += (b.getAttribute('data-pg')==='next'?1:-1); draw(); };
+    draw();
+  }
+
+  // ---- Visitors by IP: click column headers to sort ----
+  var visitorsData = [];
+  var visitorSort = { key:'events', dir:'desc' };   // default: most events first
+  function renderVisitors(){
+    var k = visitorSort.key, dir = (visitorSort.dir === 'asc') ? 1 : -1;
+    var rows = visitorsData.slice().sort(function(a,b){
+      var r = 0;
+      if(k === 'events')     r = (a.visits||0) - (b.visits||0);
+      else if(k === 'ip')    r = String(a.ip||'').localeCompare(String(b.ip||''), undefined, { numeric:true });
+      else if(k === 'first') r = (Date.parse(a.first)||0) - (Date.parse(b.first)||0);
+      else if(k === 'last')  r = (Date.parse(a.last)||0)  - (Date.parse(b.last)||0);
+      return r * dir;
+    });
+    paginate('visitors', 'visitorsPager', rows, function(v){
+      var pills = Object.keys(v.sections||{}).map(function(s){ return '<span class="pill">'+esc(sectionName(s))+' · '+v.sections[s]+'</span>'; }).join('');
+      var botTag = v.bot ? ' <span class="bot-tag">bot</span>' : '';
+      var ownTag = v.own ? ' <span class="bot-tag own">you</span>' : '';
+      return '<tr><td>'+ipCell(v.ip)+ownTag+botTag+'</td><td>'+v.visits+'</td><td><div class="pills">'+(pills||'<span class="muted">—</span>')+
+        '</div></td><td class="muted">'+fmt(v.first)+'</td><td class="muted">'+fmt(v.last)+'</td></tr>';
+    }, 5, 'No visitors recorded yet.');
+    var ths = document.querySelectorAll('#visitorsTable th.sortable');
+    Array.prototype.forEach.call(ths, function(th){
+      var isActive = th.getAttribute('data-sort') === visitorSort.key;
+      th.classList.toggle('sorted', isActive);
+      var arrow = th.querySelector('.arrow');
+      if(!arrow){ arrow = document.createElement('span'); arrow.className = 'arrow'; th.appendChild(arrow); }
+      arrow.textContent = isActive ? (visitorSort.dir === 'asc' ? '▲' : '▼') : '';
     });
   }
+  (function(){
+    var tbl = document.getElementById('visitorsTable');
+    if(tbl) tbl.addEventListener('click', function(e){
+      var th = e.target.closest('th.sortable'); if(!th) return;
+      var key = th.getAttribute('data-sort');
+      if(visitorSort.key === key){ visitorSort.dir = (visitorSort.dir === 'asc') ? 'desc' : 'asc'; }
+      else { visitorSort.key = key; visitorSort.dir = (key === 'ip') ? 'asc' : 'desc'; }  // sensible default per column
+      renderVisitors();
+    });
+  })();
 
-  function tableHint(msg){
-    show('dash');
-    document.getElementById('count').textContent = '';
-    document.getElementById('rows').innerHTML = '';
-    var empty = document.getElementById('empty');
-    empty.hidden = false;
-    empty.innerHTML = msg;
-  }
-  function load(afterLogin){
-    return fetch('/api/admin/data', { credentials:'include', headers: authHeaders({'Accept':'application/json'}) })
-      .then(function(r){
-        if(r.status === 401){
-          if(afterLogin){   // login succeeded but the session didn't come back
-            return r.json().catch(function(){ return {}; }).then(function(j){
-              show('login');
-              document.getElementById('loginErr').innerHTML = (j && j.sawSession)
-                ? 'Signed in, but the server rejected the session token. Tell the developer (session-secret mismatch).'
-                : 'Password accepted, but your browser didn’t keep the login cookie. Open the site at the OTHER address — e.g. if you used <b>57throadpha.com/admin</b>, try <b>www.57throadpha.com/admin</b>.';
-            });
-          }
-          show('login'); return;
-        }
-        return r.json().then(function(j){
-          if(j && j.ok){ show('dash'); render(j.leads || []); return; }
-          tableHint('Signed in ✓ &mdash; but the leads table isn’t set up yet.<br>Run <b>scripts/pha_leads.sql</b> in the Supabase SQL editor, then reload this page.');
-        }).catch(function(){
-          tableHint('Signed in ✓ &mdash; but the leads service errored. Make sure the <b>pha_leads</b> table exists in Supabase.');
-        });
-      })
-      .catch(function(){ /* network hiccup */ });
-  }
-
-  // login
   document.getElementById('loginForm').addEventListener('submit', function(e){
     e.preventDefault();
-    var err = document.getElementById('loginErr'); err.textContent = '';
     var pw = document.getElementById('pw').value;
-    fetch('/api/admin/session', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw}) })
+    fetch('/api/admin/session', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw})})
       .then(function(r){
-        if(r.ok){
-          return r.json().catch(function(){ return {}; }).then(function(j){
-            try { if(j && j.token) localStorage.setItem('pha_admin_token', j.token); } catch(e){}
-            document.getElementById('pw').value = ''; load(true);
-          });
-        }
-        if(r.status === 401){
-          return r.json().then(function(j){
-            err.textContent = (j && j.configured === false)
-              ? 'No admin password is set on the server yet — add ADMIN_PASSWORD in Vercel and redeploy.'
-              : 'Incorrect password.';
-          }).catch(function(){ err.textContent = 'Incorrect password.'; });
-        }
-        err.textContent = 'Sign-in service not responding (status ' + r.status + ') — the deploy may still be building.';
+        if(r.ok){ return r.json().catch(function(){ return {}; }).then(function(j){ try{ if(j&&j.token) localStorage.setItem('pha_admin_token', j.token); }catch(e){} show(); load(); }); }
+        document.getElementById('err').textContent = 'Incorrect password.';
       })
-      .catch(function(){ err.textContent = 'Something went wrong — try again.'; });
+      .catch(function(){ document.getElementById('err').textContent = 'Connection error.'; });
   });
-
-  // logout
   document.getElementById('logout').addEventListener('click', function(){
-    try { localStorage.removeItem('pha_admin_token'); } catch(e){}
-    fetch('/api/admin/session', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'logout'}) })
-      .finally(function(){ show('login'); });
+    try{ localStorage.removeItem('pha_admin_token'); }catch(e){}
+    fetch('/api/admin/session',{method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'logout'})}).finally(function(){ location.reload(); });
+  });
+  document.getElementById('refresh').addEventListener('click', load);
+
+  // delete a lead (e.g. clearing out test offers)
+  document.getElementById('leads').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-lead-del]'); if(!btn) return;
+    if(!confirm('Permanently delete this lead? This cannot be undone.')) return;
+    btn.disabled = true; btn.textContent = 'Deleting…';
+    fetch('/api/admin/leads', { method:'POST', credentials:'include', headers: authHeaders({'Content-Type':'application/json'}),
+      body: JSON.stringify({ action:'delete', id: btn.getAttribute('data-lead-del') }) })
+      .then(function(r){ return r.json(); }).then(function(res){
+        if(res && res.ok){ load(); } else { btn.disabled=false; btn.textContent='Delete'; alert('Could not delete that lead.'); }
+      }).catch(function(){ btn.disabled=false; btn.textContent='Delete'; alert('Connection error.'); });
   });
 
-  // delete (event-delegated)
-  document.getElementById('rows').addEventListener('click', function(e){
-    var btn = e.target.closest('.del'); if(!btn) return;
-    if(!confirm('Delete this sign-in permanently?')) return;
-    btn.disabled = true; btn.textContent = '…';
-    fetch('/api/admin/data', { method:'POST', credentials:'include', headers: authHeaders({'Content-Type':'application/json'}), body:JSON.stringify({action:'delete', id:btn.getAttribute('data-id')}) })
-      .then(function(r){ if(r.ok){ load(); } else { btn.disabled=false; btn.textContent='Delete'; alert('Could not delete.'); } })
-      .catch(function(){ btn.disabled=false; btn.textContent='Delete'; });
-  });
+  function show(){ login.style.display='none'; dash.style.display='block'; }
 
-  load();
-})();
+  function load(){
+    var hideBots = document.getElementById('hideBots');
+    var hideSelf = document.getElementById('hideSelf');
+    var params = [];
+    if(hideBots && !hideBots.checked) params.push('bots=1');
+    if(hideSelf && !hideSelf.checked) params.push('self=1');
+    var url = '/api/admin/data' + (params.length ? '?' + params.join('&') : '');
+    fetch(url, {cache:'no-store', credentials:'include', headers: authHeaders()}).then(function(r){
+      if(r.status === 401){ login.style.display='flex'; dash.style.display='none'; return null; }
+      return r.json();
+    }).then(function(d){ if(d && d.ok){ render(d); loadGallery(); } });
+  }
+  (function(){
+    ['hideBots','hideSelf'].forEach(function(id){ var el = document.getElementById(id); if(el) el.addEventListener('change', load); });
+  })();
+
+  // ---- manage photos (main gallery) ----
+  var galGrid = document.getElementById('galGrid');
+  var galAdd = document.getElementById('galAdd');
+  var galStatus = document.getElementById('galStatus');
+  var galItems = [];
+
+  function loadGallery(){
+    fetch('/api/photos').then(function(r){ return r.json(); }).then(function(d){
+      galItems = (d && d.photos) || [];
+      renderGallery();
+    }).catch(function(){ galGrid.innerHTML = '<div class="empty">Couldn’t load the gallery.</div>'; });
+  }
+  function renderGallery(){
+    if(!galItems.length){ galGrid.innerHTML = '<div class="empty">No photos yet — add some above.</div>'; return; }
+    galGrid.innerHTML = galItems.map(function(p, i){
+      return '<div class="gcard"><span class="pos">'+(i+1)+'</span>'+
+        '<img src="'+esc(p.url)+'" alt="">'+
+        '<div class="gctl"><div class="moves">'+
+          '<button data-mv="up" data-i="'+i+'" title="Move earlier">‹</button>'+
+          '<button data-mv="down" data-i="'+i+'" title="Move later">›</button>'+
+        '</div><button class="del" data-del="'+esc(p.id)+'" title="Remove">×</button></div></div>';
+    }).join('');
+  }
+  galGrid.addEventListener('click', function(e){
+    var mv = e.target.closest('[data-mv]'), del = e.target.closest('[data-del]');
+    if(mv){
+      var i = +mv.getAttribute('data-i');
+      var j = mv.getAttribute('data-mv') === 'up' ? i-1 : i+1;
+      if(j < 0 || j >= galItems.length) return;
+      var t = galItems[i]; galItems[i] = galItems[j]; galItems[j] = t;
+      renderGallery();
+      galAction({ action:'reorder', ids: galItems.map(function(p){ return p.id; }) }, 'Saving order…', null);
+    } else if(del){
+      if(!confirm('Remove this photo from the gallery?')) return;
+      galAction({ action:'delete', id: del.getAttribute('data-del') }, 'Removing…', loadGallery);
+    }
+  });
+  function galAction(payload, msg, done){
+    galStatus.textContent = msg || '';
+    fetch('/api/admin/gallery', { method:'POST', credentials:'include', headers: authHeaders({'Content-Type':'application/json'}), body: JSON.stringify(payload) })
+      .then(function(r){ return r.json(); }).then(function(res){
+        galStatus.textContent = (res && res.ok) ? 'Saved.' : 'Error saving.';
+        setTimeout(function(){ galStatus.textContent = ''; }, 1600);
+        if(done) done();
+      }).catch(function(){ galStatus.textContent = 'Error.'; });
+  }
+  galAdd.addEventListener('change', function(){
+    var files = Array.prototype.slice.call(galAdd.files || []);
+    galAdd.value = '';
+    if(files.length) uploadNext(files, 0);
+  });
+  function uploadNext(files, i){
+    if(i >= files.length){ galStatus.textContent = 'Done.'; setTimeout(function(){ galStatus.textContent=''; }, 1600); loadGallery(); return; }
+    galStatus.textContent = 'Uploading ' + (i+1) + ' of ' + files.length + '…';
+    resizeImage(files[i], 1600, 0.85, function(dataUrl){
+      fetch('/api/admin/gallery', { method:'POST', credentials:'include', headers: authHeaders({'Content-Type':'application/json'}), body: JSON.stringify({ action:'add', dataUrl: dataUrl }) })
+        .then(function(r){ return r.json().then(function(j){ return {s:r.status, b:j}; }).catch(function(){ return {s:r.status, b:null}; }); })
+        .then(function(res){
+          if(res.b && res.b.ok){ uploadNext(files, i+1); }
+          else { galStatus.textContent = 'Upload failed (HTTP ' + res.s + '): ' + ((res.b && res.b.error) || 'no detail'); }
+        })
+        .catch(function(e){ galStatus.textContent = 'Upload error: ' + e; });
+    });
+  }
+  function resizeImage(file, maxW, quality, cb){
+    var reader = new FileReader();
+    reader.onload = function(){
+      var im = new Image();
+      im.onload = function(){
+        var scale = Math.min(1, maxW / im.width);
+        var w = Math.round(im.width * scale), h = Math.round(im.height * scale);
+        var c = document.createElement('canvas'); c.width = w; c.height = h;
+        c.getContext('2d').drawImage(im, 0, 0, w, h);
+        cb(c.toDataURL('image/jpeg', quality));
+      };
+      im.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ---- visitor heat map (Leaflet + leaflet.heat) ----
+  var _map = null, _heat = null, _mapMarkers = [];
+  function renderMap(points){
+    var el = document.getElementById('visitorMap');
+    var empty = document.getElementById('mapEmpty');
+    points = points || [];
+    if(typeof L === 'undefined'){ el.style.display = 'none'; empty.hidden = false; empty.textContent = 'Map library could not load (offline?).'; return; }
+    if(!_map){
+      _map = L.map('visitorMap', { worldCopyJump:true, minZoom:1, scrollWheelZoom:false }).setView([25, 0], 2);
+      // OpenStreetMap tiles — free, no API key (CARTO now requires a key)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        { attribution:'&copy; OpenStreetMap contributors', subdomains:'abc', maxZoom:19 }).addTo(_map);
+    }
+    if(_heat){ _map.removeLayer(_heat); _heat = null; }
+    _mapMarkers.forEach(function(m){ _map.removeLayer(m); }); _mapMarkers = [];
+
+    if(!points.length){ empty.hidden = false; empty.textContent = 'No located visitors yet.'; setTimeout(function(){ _map.invalidateSize(); }, 60); return; }
+    empty.hidden = true;
+
+    var maxE = points.reduce(function(m,p){ return Math.max(m, p.events||1); }, 1);
+    var heatData = points.map(function(p){ return [p.lat, p.lon, (p.events||1)/maxE]; });
+    _heat = L.heatLayer(heatData, { radius:28, blur:20, maxZoom:8, minOpacity:.3,
+      gradient:{0.2:'#5b7fb4', 0.4:'#7ea86b', 0.6:'#d8b24a', 0.8:'#d98a3a', 1:'#c14b2f'} }).addTo(_map);
+
+    points.forEach(function(p){
+      var m = L.circleMarker([p.lat, p.lon], { radius:4, color:'#8a6a1e', weight:1, fillColor:'#b48a3f', fillOpacity:.55 }).addTo(_map);
+      var loc = [p.city, p.region].filter(Boolean).join(', ') || 'Unknown';
+      m.bindPopup('<b>'+esc(loc)+'</b><br>'+p.events+' event'+(p.events===1?'':'s'));
+      _mapMarkers.push(m);
+    });
+    try { _map.fitBounds(L.latLngBounds(points.map(function(p){ return [p.lat, p.lon]; })), { padding:[30,30], maxZoom:6 }); } catch(e){}
+    setTimeout(function(){ _map.invalidateSize(); }, 60);
+  }
+
+  // ---- search & AI engine visibility ----
+  function crawlDate(ts){ try{ var d=new Date(ts); return (d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear(); }catch(e){ return ts; } }
+  function crawlRow(c){
+    var detail = c.seen
+      ? '<span class="crawl-when">first crawled '+crawlDate(c.first)+' &middot; '+c.count+' hit'+(c.count===1?'':'s')+'</span>'
+      : '<span class="crawl-when wait">awaiting first crawl</span>';
+    return '<div class="crawl-row'+(c.seen?' seen':'')+'"><span class="crawl-dot'+(c.seen?' on':'')+'"></span>'+
+      '<span class="crawl-name">'+esc(c.name)+'</span>'+detail+'</div>';
+  }
+  function renderCrawlers(list, sum){
+    document.getElementById('crawlAI').innerHTML     = list.filter(function(c){return c.kind==='ai';}).map(crawlRow).join('');
+    document.getElementById('crawlSearch').innerHTML = list.filter(function(c){return c.kind==='search';}).map(crawlRow).join('');
+    document.getElementById('crawlCount').textContent = (sum.seen||0)+' of '+(sum.total||0)+' engines';
+    var intro = document.getElementById('crawlIntro');
+    if((sum.seen||0) === 0){
+      intro.innerHTML = 'No engines have crawled yet. As Google and the AI answer engines discover the listing, they&rsquo;ll light up below &mdash; a live, verifiable record of the site being found.';
+    } else {
+      intro.innerHTML = '<b>'+sum.seen+'</b> of '+sum.total+' target engines have crawled this listing, including <b>'+(sum.aiSeen||0)+'</b> of '+(sum.aiTotal||0)+' AI answer engines. New arrivals light up automatically.';
+    }
+  }
+
+  function render(d){
+    GEO = d.geo || {};
+    document.getElementById('s-ips').textContent    = d.summary.uniqueIps;
+    document.getElementById('s-views').textContent  = d.summary.pageviews;
+    document.getElementById('s-events').textContent = d.summary.totalEvents;
+    document.getElementById('s-leads').textContent  = d.summary.leads;
+    document.getElementById('updated').textContent  = 'Updated ' + new Date().toLocaleTimeString();
+
+    // filter note — reports what's currently being hidden (bots and/or your own visits)
+    var bn = document.getElementById('botNote'), bs = d.botStats || {}, ss = d.selfStats || {};
+    var parts = [];
+    if(!d.botsIncluded && (bs.hiddenEvents||0) > 0){
+      parts.push('<b>'+bs.hiddenIps+'</b> bot/crawler '+(bs.hiddenIps===1?'source':'sources')+' ('+(bs.hiddenPageviews||0)+' views)');
+    }
+    if(!d.selfIncluded && (ss.hiddenEvents||0) > 0){
+      parts.push('Ian&rsquo;s testing ('+(ss.hiddenPageviews||0)+' views)');
+    }
+    var noteHtml = parts.length ? 'Hidden from these numbers: ' + parts.join(' and ') + '. Untick the boxes above to include them.' : '';
+    if(d.windowed){
+      noteHtml += (noteHtml ? '<br>' : '') + 'Charts and tables cover the most recent <b>' +
+        (d.windowSize||0).toLocaleString() + '</b> events' +
+        (d.lifetime && d.lifetime.events ? ' of <b>' + d.lifetime.events.toLocaleString() + '</b> all-time' : '') + '.';
+    }
+    bn.innerHTML = noteHtml;
+
+    // section engagement — always the 6 real sections, in scroll order, with clear names
+    var sc = d.sectionCounts || {};
+    var barData = SECTIONS.map(function(s){ return { label:s.label, count: sc[s.key]||0 }; });
+    document.getElementById('bars').innerHTML = barChartSVG(barData);
+
+    // total traffic over time — store raw times, draw for the selected range
+    trafficTimes = d.pageviewTimes || [];
+    renderTraffic();
+
+    // visitor heat map
+    renderMap(d.geoPoints || []);
+
+    // search & AI engine visibility
+    renderCrawlers(d.crawlers || [], d.crawlerSummary || {});
+
+    // leads
+    document.getElementById('leads').innerHTML = d.leads.length ? d.leads.map(function(l){
+      var f = l.fields || {};
+      var name = (f.client_name || ((f.client_first||f.first||'')+' '+(f.client_last||f.last||'')).trim()) || 'Anonymous';
+      var email = f.email || f.agent_email || '';
+      var rows = Object.keys(f).map(function(k){ return '<dt>'+esc(k.replace(/_/g,' '))+'</dt><dd>'+esc(f[k])+'</dd>'; }).join('');
+      var delBtn = (l.id != null) ? '<button class="lead-del" data-lead-del="'+esc(l.id)+'" title="Delete this lead">Delete</button>' : '';
+      return '<details class="lead"><summary><span class="tag '+esc(l.type)+'">'+esc(l.type)+'</span> <strong>'+esc(name)+
+        '</strong> <span class="muted">'+esc(email)+'</span> <span class="muted" style="margin-left:auto">'+fmt(l.ts)+'</span></summary>'+
+        '<dl class="fields">'+rows+'<dt>IP</dt><dd>'+ipCell(l.ip)+'</dd></dl>'+delBtn+'</details>';
+    }).join('') : '<div class="empty">No leads yet. Showing requests and offers will appear here.</div>';
+
+    // admin access log — 5 per page
+    paginate('adminAccess', 'adminAccessPager', d.adminAccess || [], function(a){
+      return '<tr><td class="muted">'+fmt(a.ts)+'</td><td><span class="tag '+(a.ok?'ok':'fail')+'">'+(a.ok?'signed in':'failed')+
+        '</span></td><td>'+ipCell(a.ip)+'</td><td class="muted" style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(a.ua||'')+'</td></tr>';
+    }, 4, 'No admin sign-ins recorded yet.', 5);
+
+    // visitors — sortable columns, 10 per page (default: most events first)
+    visitorsData = d.visitors || [];
+    renderVisitors();
+
+    // recent activity — 10 per page
+    paginate('recent', 'recentPager', d.recent || [], function(e){
+      return '<tr><td class="muted">'+fmt(e.ts)+'</td><td>'+ipCell(e.ip)+'</td><td>'+esc(e.event)+
+        '</td><td>'+esc(e.section||'—')+'</td></tr>';
+    }, 4, 'No activity yet.');
+  }
+
+  // if already logged in (token present), skip straight to the dashboard
+  fetch('/api/admin/data', {credentials:'include', headers: authHeaders()}).then(function(r){ if(r.ok){ show(); return r.json(); } return null; })
+    .then(function(d){ if(d && d.ok){ render(d); loadGallery(); } }).catch(function(){});
 </script>
 </body>
 </html>

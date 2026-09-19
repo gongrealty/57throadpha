@@ -1,10 +1,9 @@
-// Shared helpers for the 57throadpha serverless functions (files starting with _ are not routes).
-// Mirrors the blvdgardens4h helper; uses the same Supabase project this site already
-// talks to for the sensor panel (SUPABASE_URL + SUPABASE_SERVICE_KEY).
+// Shared helpers for the Vercel serverless functions (files starting with _ are not routes).
 const crypto = require('crypto');
 
+// accept either the base URL or the REST endpoint; normalise to the base
 const SB_URL = (process.env.SUPABASE_URL || '').replace(/\/+$/, '').replace(/\/rest\/v1$/, '');
-const SB_KEY = process.env.SUPABASE_SERVICE_KEY;              // service_role key (secret, server-side only)
+const SB_KEY = process.env.SUPABASE_SERVICE_KEY;    // service_role key (secret, server-side only)
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 const SESSION_SECRET = process.env.ADMIN_SESSION_SECRET || (ADMIN_PASSWORD + '::pha-session-v1');
 
@@ -18,10 +17,19 @@ async function sbInsert(table, row){
   });
   if(!r.ok) throw new Error(`sbInsert ${table} ${r.status} ${await r.text()}`);
 }
+async function sbSelect(table, query){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${query}`, {
+    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+  });
+  if(!r.ok) throw new Error(`sbSelect ${table} ${r.status} ${await r.text()}`);
+  return r.json();
+}
 // Page past PostgREST's ~1000-row per-response cap via Range headers.
+// (A single request is silently capped, so a plain sbSelect only ever returns the first page.)
+// maxRows bounds the work so callers can't degrade as a table grows without limit.
 async function sbSelectAll(table, query, pageSize, maxRows){
   pageSize = pageSize || 1000;
-  maxRows  = maxRows  || 100000;
+  maxRows  = maxRows  || 1000000;
   let out = [], from = 0;
   while(out.length < maxRows){
     const take = Math.min(pageSize, maxRows - out.length);
@@ -33,10 +41,30 @@ async function sbSelectAll(table, query, pageSize, maxRows){
     const chunk = await r.json();
     if(!Array.isArray(chunk)) break;
     out = out.concat(chunk);
-    if(chunk.length < take) break;
+    if(chunk.length < take) break;       // last page reached
     from += take;
   }
   return out;
+}
+// Exact row count without transferring the rows (PostgREST returns it in Content-Range).
+async function sbCount(table, query){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${query}`, {
+    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`,
+      Prefer: 'count=exact', 'Range-Unit': 'items', Range: '0-0' }
+  });
+  if(!r.ok) throw new Error(`sbCount ${table} ${r.status}`);
+  const cr = r.headers.get('content-range') || '';        // e.g. "0-0/1565"
+  const n = parseInt(cr.split('/')[1], 10);
+  return isNaN(n) ? null : n;
+}
+async function sbPatch(table, query, body){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${query}`, {
+    method: 'PATCH',
+    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`,
+      'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    body: JSON.stringify(body)
+  });
+  if(!r.ok) throw new Error(`sbPatch ${table} ${r.status} ${await r.text()}`);
 }
 async function sbDelete(table, query){
   const r = await fetch(`${SB_URL}/rest/v1/${table}?${query}`, {
@@ -45,6 +73,36 @@ async function sbDelete(table, query){
   });
   if(!r.ok) throw new Error(`sbDelete ${table} ${r.status} ${await r.text()}`);
 }
+
+// ---- Supabase Storage ----
+async function sbStorageUpload(bucket, path, buffer, contentType){
+  const r = await fetch(`${SB_URL}/storage/v1/object/${bucket}/${path}`, {
+    method: 'POST',
+    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`,
+      'Content-Type': contentType, 'x-upsert': 'true' },
+    body: buffer
+  });
+  if(!r.ok) throw new Error(`storage upload ${r.status} ${await r.text()}`);
+}
+async function sbStorageDelete(bucket, path){
+  try {
+    await fetch(`${SB_URL}/storage/v1/object/${bucket}/${path}`, {
+      method: 'DELETE',
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+    });
+  } catch(e){ /* ignore */ }
+}
+// create a public bucket if it doesn't already exist (idempotent — "already exists" is fine)
+async function sbStorageEnsureBucket(bucket){
+  try {
+    await fetch(`${SB_URL}/storage/v1/bucket`, {
+      method: 'POST',
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: bucket, name: bucket, public: true })
+    });
+  } catch(e){ /* ignore; the upload call will surface any real problem */ }
+}
+function sbPublicUrl(bucket, path){ return `${SB_URL}/storage/v1/object/public/${bucket}/${path}`; }
 
 // ---- request helpers ----
 function clientIp(req){
@@ -79,9 +137,8 @@ function validToken(tok){
   try { if(sign(exp) !== sig) return false; } catch(e){ return false; }
   return Number(exp) > Date.now();
 }
-// Accept the session token either from an Authorization: Bearer header (the
-// reliable path — the page keeps the token itself, no cookie scoping to worry
-// about) or from the cookie as a fallback.
+// Accept the session either from an Authorization: Bearer header (the reliable
+// path — no cookie domain scoping to get wrong) or the cookie as a fallback.
 function bearerToken(req){
   const h = req.headers['authorization'] || req.headers['Authorization'] || '';
   const m = /^Bearer\s+(.+)$/i.exec(String(h));
@@ -89,4 +146,4 @@ function bearerToken(req){
 }
 function isAdmin(req){ return validToken(bearerToken(req)) || validToken(parseCookies(req).pha_admin); }
 
-module.exports = { sbInsert, sbSelectAll, sbDelete, clientIp, readBody, parseCookies, makeToken, validToken, isAdmin, ADMIN_PASSWORD };
+module.exports = { sbInsert, sbSelect, sbSelectAll, sbCount, sbPatch, sbDelete, sbStorageUpload, sbStorageDelete, sbStorageEnsureBucket, sbPublicUrl, clientIp, readBody, parseCookies, makeToken, validToken, isAdmin, ADMIN_PASSWORD };
