@@ -12,6 +12,8 @@
 // If CONDITIONS_PASSWORD is unset the endpoint stays locked. It fails
 // closed on purpose -- a misconfiguration must never expose the data.
 
+const { isAdmin } = require('./_lib');
+
 const HOUSE = '87-14 57th Rd PHA';
 
 // The sensors report generic names ("Thermo-hygrometer 2"), so map each
@@ -36,17 +38,24 @@ module.exports = async (req, res) => {
   const supaUrl = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
   const supaKey = process.env.SUPABASE_SERVICE_KEY;
 
-  if (!expected || !supaUrl || !supaKey) return send(res, { ok: false, reason: 'not_configured' });
+  // The readings live in Supabase; without it there is nothing to serve.
+  if (!supaUrl || !supaKey) return send(res, { ok: false, reason: 'not_configured' });
   if (req.method !== 'POST') return send(res, { ok: false, reason: 'locked' });
 
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
   const given = (body && body.password) || '';
 
-  // No password at all is "locked" -- that's the page asking whether the
-  // panel is live. A non-empty wrong one is a genuine failed attempt.
-  if (!given) return send(res, { ok: false, reason: 'locked' });
-  if (given !== expected) return send(res, { ok: false, reason: 'bad_password' });
+  // A logged-in admin (Bearer token or session cookie) sees the readings with
+  // no password -- the admin dashboard shows this panel and there's no second
+  // box to type. Everyone else still needs the shared CONDITIONS_PASSWORD.
+  if (!isAdmin(req)) {
+    if (!expected) return send(res, { ok: false, reason: 'locked' });   // password path not set up
+    // No password at all is "locked" -- that's the page asking whether the
+    // panel is live. A non-empty wrong one is a genuine failed attempt.
+    if (!given) return send(res, { ok: false, reason: 'locked' });
+    if (given !== expected) return send(res, { ok: false, reason: 'bad_password' });
+  }
 
   try {
     const headers = { apikey: supaKey, Authorization: `Bearer ${supaKey}` };

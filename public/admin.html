@@ -133,6 +133,33 @@
   .gcard .gctl .del{background:rgba(198,60,60,.94);color:#fff}
   .gcard .moves{display:flex;gap:5px}
   @media(max-width:760px){.cards{grid-template-columns:repeat(2,1fr)}.bar{grid-template-columns:90px 1fr 40px}.galgrid{grid-template-columns:repeat(2,1fr)}}
+  /* Inside right now — private sensor readings (admin only) */
+  #livePanel .rows{margin-top:4px;display:grid;gap:9px}
+  #livePanel .rm{display:grid;grid-template-columns:1fr auto 84px auto;align-items:center;gap:16px}
+  #livePanel .rm i{font-style:normal;font-size:13.5px;color:#3f4c58;letter-spacing:.02em}
+  #livePanel .rm b{font-size:13.5px;color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+  #livePanel .rm-temp{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05}
+  #livePanel .rm-when{font-size:9px;color:#93a0ac;margin-top:3px;white-space:nowrap;letter-spacing:.01em}
+  #livePanel .rm-building{justify-self:end;text-align:right;font-size:9.5px;font-style:italic;color:#9aa6b2;white-space:nowrap;font-variant-numeric:tabular-nums}
+  #livePanel .rm svg{width:84px;height:20px;display:block;overflow:visible}
+  #livePanel .rm polyline{fill:none;stroke:#b48a3f;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  #livePanel .rm-hilo{display:flex;flex-direction:column;gap:2px;justify-self:end;font-size:9.5px;line-height:1.15;color:#8593a1;font-variant-numeric:tabular-nums;white-space:nowrap}
+  #livePanel .rm-hilo span{display:inline-flex;align-items:baseline;gap:4px}
+  #livePanel .rm-hilo .k{font-style:normal;font-weight:700;font-size:8px;letter-spacing:.03em;width:7px}
+  #livePanel .rm-hilo b{font-size:9.5px;font-weight:600;color:#3f4c58}
+  #livePanel .rm-hilo .w{font-style:normal;color:#93a0ac}
+  #livePanel .rm-hilo .hl-h .k{color:#c07a54}
+  #livePanel .rm-hilo .hl-l .k{color:#5c86ad}
+  #livePanel .live-foot{margin-top:14px;padding-top:11px;border-top:1px solid rgba(0,0,0,.08);display:flex;flex-wrap:wrap;gap:6px 18px}
+  #livePanel .live-foot span{font-size:13px;color:#3f4c58}
+  #livePanel .live-foot b{color:var(--ink);font-weight:600}
+  #livePanel .live-foot .ago{color:#7d8a97;font-size:12.5px}
+  @media(max-width:600px){
+    #livePanel .rm{grid-template-columns:1fr auto 60px;gap:3px 12px}
+    #livePanel .rm svg{width:60px}
+    #livePanel .rm-hilo{grid-column:1 / -1;justify-self:start;flex-direction:row;flex-wrap:wrap;gap:2px 18px;margin-top:1px;font-size:10px}
+    #livePanel .rm-hilo b{font-size:10px}
+  }
 </style>
 </head>
 <body>
@@ -175,6 +202,15 @@
     </div>
     <div class="bot-note" id="botNote"></div>
 
+    <div class="panel" id="livePanel" hidden>
+      <h2>Inside right now</h2>
+      <div class="rows" id="liveRows"></div>
+      <div class="live-foot">
+        <span>Humidity <b id="liveHum">—</b></span>
+        <span class="ago" id="liveAgo"></span>
+      </div>
+    </div>
+
     <div class="panel">
       <div class="panel-head">
         <h2>Total traffic over time</h2>
@@ -212,11 +248,6 @@
       <h2>Where visitors are — event heat map</h2>
       <div id="visitorMap"></div>
       <div class="map-empty" id="mapEmpty" hidden>No located visitors yet.</div>
-    </div>
-
-    <div class="panel">
-      <h2>Section engagement</h2>
-      <div class="bars" id="bars"></div>
     </div>
 
     <div class="panel">
@@ -523,9 +554,46 @@
       }).catch(function(){ btn.disabled=false; btn.textContent='Delete'; alert('Connection error.'); });
   });
 
-  function show(){ login.style.display='none'; dash.style.display='block'; }
+  // ---- Inside right now (private sensor readings; the admin session authorizes,
+  //      so there is no separate password box here) ----
+  (function(){
+    var W=84,H=20;
+    function agoShort(iso){ var m=Math.round((Date.now()-new Date(iso).getTime())/60000); if(m<1)return 'just now'; if(m<60)return m+' min ago'; var h=Math.round(m/60); if(h<24)return h+(h===1?' hr ago':' hrs ago'); var d=Math.round(h/24); return d+(d===1?' day ago':' days ago'); }
+    function ago(iso){ var mins=Math.round((Date.now()-new Date(iso).getTime())/60000); if(mins<2)return 'just now'; if(mins<60)return mins+' minutes ago'; var hrs=Math.round(mins/60); if(hrs<24)return hrs===1?'an hour ago':hrs+' hours ago'; var d=Math.round(hrs/24); return d===1?'yesterday':d+' days ago'; }
+    function clock(iso){ try{ return new Date(iso).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
+    function hiloLine(tag,pt){ var s=document.createElement('span'); s.className='hl-'+tag.toLowerCase(); var k=document.createElement('em'); k.className='k'; k.textContent=tag; var t=document.createElement('b'); t.textContent=Number(pt.tempF).toFixed(1)+'°'; var w=document.createElement('i'); w.className='w'; w.textContent=clock(pt.at); s.appendChild(k); s.appendChild(t); s.appendChild(w); return s; }
+    function sparkline(hist,dom){ var n=hist.length; if(n<2)return null; var span=(dom.max-dom.min)||1; var pts=hist.map(function(v,i){ var x=(i/(n-1))*W; var y=H-1-((v-dom.min)/span)*(H-2); return Math.round(x*10)/10+','+Math.round(y*10)/10; }); var svg=document.createElementNS('http://www.w3.org/2000/svg','svg'); svg.setAttribute('viewBox','0 0 '+W+' '+H); svg.setAttribute('aria-hidden','true'); var ln=document.createElementNS('http://www.w3.org/2000/svg','polyline'); ln.setAttribute('points',pts.join(' ')); svg.appendChild(ln); return svg; }
+    function draw(d){
+      var panel=document.getElementById('livePanel'), rows=document.getElementById('liveRows'); if(!rows)return; rows.textContent='';
+      d.sensors.forEach(function(s){
+        var row=document.createElement('div'); row.className='rm';
+        var name=document.createElement('i'); name.textContent=s.label;
+        var tc=document.createElement('div'); tc.className='rm-temp';
+        var val=document.createElement('b'); val.textContent=Number(s.tempF).toFixed(1)+'°F'; tc.appendChild(val);
+        if(s.at){ var w=document.createElement('span'); w.className='rm-when'; w.textContent=agoShort(s.at); tc.appendChild(w); }
+        row.appendChild(name); row.appendChild(tc);
+        var sp=sparkline(s.history||[], d.domain||{min:0,max:1}); if(sp)row.appendChild(sp);
+        if(s.hi&&s.lo&&s.hi.tempF!==s.lo.tempF){ var hl=document.createElement('div'); hl.className='rm-hilo'; hl.appendChild(hiloLine('H',s.hi)); hl.appendChild(hiloLine('L',s.lo)); row.appendChild(hl); }
+        else { var nt=document.createElement('div'); nt.className='rm-hilo rm-building'; nt.textContent=(s.hi&&s.lo)?('Steady '+Number(s.hi.tempF).toFixed(1)+'° · '+(s.points||0)+' readings/24h'):'24-hr range building…'; row.appendChild(nt); }
+        rows.appendChild(row);
+      });
+      var hum=document.getElementById('liveHum');
+      if(d.humidity===null||d.humidity===undefined){ hum.parentNode.style.display='none'; } else { hum.parentNode.style.display=''; hum.textContent=d.humidity+'%'; }
+      document.getElementById('liveAgo').textContent='Updated '+ago(d.updatedAt)+(d.stale?' · may be stale':'');
+      panel.hidden=false;
+    }
+    window.__loadConditions=function(){
+      fetch('/api/conditions',{method:'POST',cache:'no-store',headers:authHeaders({'Content-Type':'application/json'}),body:'{}'})
+        .then(function(r){ return r.ok?r.json():null; })
+        .then(function(d){ var p=document.getElementById('livePanel'); if(d&&d.ok&&d.sensors&&d.sensors.length){ draw(d); } else if(p){ p.hidden=true; } })
+        .catch(function(){ var p=document.getElementById('livePanel'); if(p)p.hidden=true; });
+    };
+  })();
+
+  function show(){ login.style.display='none'; dash.style.display='block'; if(window.__loadConditions) window.__loadConditions(); }
 
   function load(){
+    if(window.__loadConditions) window.__loadConditions();
     var hideBots = document.getElementById('hideBots');
     var hideSelf = document.getElementById('hideSelf');
     var params = [];
@@ -710,11 +778,6 @@
         (d.lifetime && d.lifetime.events ? ' of <b>' + d.lifetime.events.toLocaleString() + '</b> all-time' : '') + '.';
     }
     bn.innerHTML = noteHtml;
-
-    // section engagement — always the 6 real sections, in scroll order, with clear names
-    var sc = d.sectionCounts || {};
-    var barData = SECTIONS.map(function(s){ return { label:s.label, count: sc[s.key]||0 }; });
-    document.getElementById('bars').innerHTML = barChartSVG(barData);
 
     // total traffic over time — store raw times, draw for the selected range
     trafficTimes = d.pageviewTimes || [];
