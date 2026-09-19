@@ -4,9 +4,9 @@
 const { sbSelectAll, sbDelete, isAdmin, readBody, parseCookies } = require('../_lib');
 
 module.exports = async (req, res) => {
-  // sawSession lets the login page tell "cookie never arrived" (domain/scope
-  // problem) apart from "cookie arrived but was rejected" (secret mismatch).
-  if(!isAdmin(req)){ res.status(401).json({ ok:false, sawSession: !!parseCookies(req).pha_admin }); return; }
+  // Password gate removed at the owner's request — /admin is open.
+  // To re-secure later, restore this line:
+  //   if(!isAdmin(req)){ res.status(401).json({ ok:false }); return; }
 
   if(req.method === 'POST'){
     const body = await readBody(req);
