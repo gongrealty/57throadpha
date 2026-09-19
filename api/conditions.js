@@ -122,13 +122,16 @@ module.exports = async (req, res) => {
           firstAt: hist.length ? hist[0].ts : null,
           lastAt: hist.length ? hist[hist.length - 1].ts : null,
           history: hist.map((p) => round1(p.f)),
+          // Timestamped points so the dashboard can plot the line against a real
+          // 24-hour time axis (not just even index spacing).
+          series: hist.map((p) => ({ t: p.ts, f: round1(p.f) })),
           hi: hasHistory && hiPt ? { tempF: round1(hiPt.f), at: hiPt.ts } : null,
           lo: hasHistory && loPt ? { tempF: round1(loPt.f), at: loPt.ts } : null,
         };
       })
       .sort((a, b) => a.order - b.order)
-      .map(({ label, tempF, at, points, firstAt, lastAt, history, hi, lo }) =>
-        ({ label, tempF, at, points, firstAt, lastAt, history, hi, lo }));
+      .map(({ label, tempF, at, points, firstAt, lastAt, history, series, hi, lo }) =>
+        ({ label, tempF, at, points, firstAt, lastAt, history, series, hi, lo }));
 
     // One shared vertical scale across all three, so the lines stay
     // comparable -- a warmer floor should look warmer, not just differently
