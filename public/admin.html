@@ -534,8 +534,18 @@
     var url = '/api/admin/data' + (params.length ? '?' + params.join('&') : '');
     fetch(url, {cache:'no-store', credentials:'include', headers: authHeaders()}).then(function(r){
       if(r.status === 401){ login.style.display='flex'; dash.style.display='none'; return null; }
-      return r.json();
-    }).then(function(d){ if(d && d.ok){ render(d); loadGallery(); } });
+      return r.json().catch(function(){ return null; });
+    }).then(function(d){
+      if(d && d.ok){ render(d); loadGallery(); return; }
+      if(d && !d.ok){
+        // the data endpoint errored — almost always the pha_events table isn't created yet
+        document.getElementById('botNote').innerHTML =
+          '⚠ The traffic/engine/map data can’t load yet — run <b>scripts/pha_events.sql</b> in Supabase, then refresh. (Leads already work; this is just the analytics tables.)';
+        renderCrawlers([], {});   // show the 12 engines as "awaiting first crawl"
+        renderMap([]);            // show the world basemap
+        loadGallery();
+      }
+    });
   }
   (function(){
     ['hideBots','hideSelf'].forEach(function(id){ var el = document.getElementById(id); if(el) el.addEventListener('change', load); });
