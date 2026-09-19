@@ -22,6 +22,9 @@ module.exports = async (req, res) => {
   // `configured` lets the login page distinguish "wrong password" from
   // "ADMIN_PASSWORD isn't set in this deployment yet" (needs a redeploy).
   if(!ok){ res.status(401).json({ ok:false, configured: !!ADMIN_PASSWORD }); return; }
-  res.setHeader('Set-Cookie', `pha_admin=${makeToken()}; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=86400${dom}`);
-  res.status(200).json({ ok:true });
+  const token = makeToken();
+  // Set a cookie too (belt and suspenders), but the token in the body is the
+  // reliable path — the page stores it and sends it as a Bearer header.
+  res.setHeader('Set-Cookie', `pha_admin=${token}; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=86400${dom}`);
+  res.status(200).json({ ok:true, token });
 };

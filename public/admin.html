@@ -91,6 +91,13 @@
 (function(){
   var login = document.getElementById('login'), dash = document.getElementById('dash');
 
+  // Session token lives here (not a cookie), so nothing depends on domain scope.
+  function authHeaders(extra){
+    var h = {}; for(var k in (extra||{})) h[k] = extra[k];
+    try { var t = localStorage.getItem('pha_admin_token'); if(t) h['Authorization'] = 'Bearer ' + t; } catch(e){}
+    return h;
+  }
+
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];}); }
   function when(iso){
     try {
@@ -129,7 +136,7 @@
     empty.innerHTML = msg;
   }
   function load(afterLogin){
-    return fetch('/api/admin/data', { credentials:'include', headers:{'Accept':'application/json'} })
+    return fetch('/api/admin/data', { credentials:'include', headers: authHeaders({'Accept':'application/json'}) })
       .then(function(r){
         if(r.status === 401){
           if(afterLogin){   // login succeeded but the session didn't come back
@@ -159,7 +166,12 @@
     var pw = document.getElementById('pw').value;
     fetch('/api/admin/session', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw}) })
       .then(function(r){
-        if(r.ok){ document.getElementById('pw').value=''; load(true); return; }
+        if(r.ok){
+          return r.json().catch(function(){ return {}; }).then(function(j){
+            try { if(j && j.token) localStorage.setItem('pha_admin_token', j.token); } catch(e){}
+            document.getElementById('pw').value = ''; load(true);
+          });
+        }
         if(r.status === 401){
           return r.json().then(function(j){
             err.textContent = (j && j.configured === false)
@@ -174,6 +186,7 @@
 
   // logout
   document.getElementById('logout').addEventListener('click', function(){
+    try { localStorage.removeItem('pha_admin_token'); } catch(e){}
     fetch('/api/admin/session', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'logout'}) })
       .finally(function(){ show('login'); });
   });
@@ -183,7 +196,7 @@
     var btn = e.target.closest('.del'); if(!btn) return;
     if(!confirm('Delete this sign-in permanently?')) return;
     btn.disabled = true; btn.textContent = '…';
-    fetch('/api/admin/data', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'delete', id:btn.getAttribute('data-id')}) })
+    fetch('/api/admin/data', { method:'POST', credentials:'include', headers: authHeaders({'Content-Type':'application/json'}), body:JSON.stringify({action:'delete', id:btn.getAttribute('data-id')}) })
       .then(function(r){ if(r.ok){ load(); } else { btn.disabled=false; btn.textContent='Delete'; alert('Could not delete.'); } })
       .catch(function(){ btn.disabled=false; btn.textContent='Delete'; });
   });

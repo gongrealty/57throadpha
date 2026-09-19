@@ -79,6 +79,14 @@ function validToken(tok){
   try { if(sign(exp) !== sig) return false; } catch(e){ return false; }
   return Number(exp) > Date.now();
 }
-function isAdmin(req){ return validToken(parseCookies(req).pha_admin); }
+// Accept the session token either from an Authorization: Bearer header (the
+// reliable path — the page keeps the token itself, no cookie scoping to worry
+// about) or from the cookie as a fallback.
+function bearerToken(req){
+  const h = req.headers['authorization'] || req.headers['Authorization'] || '';
+  const m = /^Bearer\s+(.+)$/i.exec(String(h));
+  return m ? m[1] : '';
+}
+function isAdmin(req){ return validToken(bearerToken(req)) || validToken(parseCookies(req).pha_admin); }
 
 module.exports = { sbInsert, sbSelectAll, sbDelete, clientIp, readBody, parseCookies, makeToken, validToken, isAdmin, ADMIN_PASSWORD };
