@@ -9,6 +9,7 @@
   :root{ --ink:#14110e; --paper:#f6f1e9; --card:#fffdf9; --muted:#8a8178; --gold:#b48a3f; --line:rgba(0,0,0,.12);
     --serif:Georgia,"Times New Roman",serif; --sans:"Helvetica Neue",Arial,sans-serif; }
   *{box-sizing:border-box}
+  [hidden]{display:none!important}   /* .login sets display:flex, which was overriding the hidden attribute */
   body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased}
   .wrap{max-width:1040px;margin:0 auto;padding:26px 20px 60px}
   a{color:inherit}
