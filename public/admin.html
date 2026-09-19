@@ -120,10 +120,27 @@
     });
   }
 
+  function tableHint(msg){
+    show('dash');
+    document.getElementById('count').textContent = '';
+    document.getElementById('rows').innerHTML = '';
+    var empty = document.getElementById('empty');
+    empty.hidden = false;
+    empty.innerHTML = msg;
+  }
   function load(){
     return fetch('/api/admin/data', { headers:{'Accept':'application/json'} })
-      .then(function(r){ if(r.status===401){ show('login'); return null; } return r.json(); })
-      .then(function(j){ if(j && j.ok){ show('dash'); render(j.leads||[]); } });
+      .then(function(r){
+        if(r.status === 401){ show('login'); return; }   // not signed in
+        return r.json().then(function(j){
+          if(j && j.ok){ show('dash'); render(j.leads || []); return; }
+          // Signed in, but the read failed -- almost always the table is missing.
+          tableHint('Signed in ✓ &mdash; but the leads table isn’t set up yet.<br>Run <b>scripts/pha_leads.sql</b> in the Supabase SQL editor, then reload this page.');
+        }).catch(function(){
+          tableHint('Signed in ✓ &mdash; but the leads service errored. Make sure the <b>pha_leads</b> table exists in Supabase.');
+        });
+      })
+      .catch(function(){ /* network hiccup */ });
   }
 
   // login
