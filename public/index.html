@@ -268,6 +268,27 @@
   .si-modal .thanks .big{font-family:var(--serif);font-size:26px;margin-bottom:8px}
   .si-modal .privacy-note{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.5}
   .si-modal .form-error{color:#a5352f;background:#f6e4e2;border:1px solid #e3b7b2;font-size:13px;line-height:1.5;border-radius:6px;padding:10px 12px;margin-top:16px}
+  /* select inside the modal (inputs are already styled above) */
+  .si-modal select{width:100%;font:inherit;font-size:15px;padding:11px 13px;border:1px solid rgba(0,0,0,.18);border-radius:5px;background-color:#fff;color:var(--ink);-webkit-appearance:none;appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a8178' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center}
+  .si-modal select:focus{outline:2px solid var(--gold);border-color:transparent}
+  /* ---------- monthly payment calculator ---------- */
+  .calc-split{display:flex;gap:10px}
+  .calc-split #calcDown{flex:1}
+  .calc-split #calcDownPct{width:92px;text-align:center}
+  .rate-src{text-transform:none;letter-spacing:.02em;color:var(--muted);font-size:11px;font-weight:400}
+  .calc-rows{margin-top:24px;border-top:1px solid rgba(0,0,0,.12);padding-top:6px}
+  .calc-rows>div{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:11px 0;border-bottom:1px solid rgba(0,0,0,.07)}
+  .calc-rows>div:last-child{border-bottom:0}
+  .calc-rows span{font-size:14px;color:var(--ink)}
+  .calc-rows span em{display:block;font-style:normal;font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:3px;max-width:34ch}
+  .calc-rows b{font-weight:600;font-size:15px;white-space:nowrap}
+  .calc-total{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-top:18px;padding-top:16px;border-top:2px solid var(--ink)}
+  .calc-total span{font-size:15px;font-weight:600}
+  .calc-total b{font-family:var(--sans);font-size:27px;font-weight:700;white-space:nowrap}
+  .calc-note{font-size:11px;color:var(--muted);margin-top:16px;line-height:1.55}
+  .calc-note b{color:#6f6558;font-weight:600}
+  .calc-open{display:inline-block;margin-top:20px;font:inherit;font-size:13px;letter-spacing:.02em;cursor:pointer;background:var(--ink);color:var(--paper);border:0;border-radius:6px;padding:12px 22px}
+  .calc-open:hover{background:var(--gold);color:#231a08}
 </style>
 </head>
 <body>
@@ -344,6 +365,7 @@
         <span>Common charges <b>$997.15</b>/mo</span>
         <span>Real estate taxes <b>$416.33</b>/mo</span>
       </div>
+      <button type="button" class="calc-open" data-open="calc">Calculate monthly payment</button>
     </div>
   </section>
 
@@ -584,6 +606,117 @@
     </div>
   </div>
 </div>
+
+<!-- ============ MONTHLY PAYMENT CALCULATOR ============ -->
+<div class="si-modal calc-modal" id="m-calc" role="dialog" aria-modal="true" aria-label="Monthly payment calculator">
+  <div class="scrim" data-close></div>
+  <div class="card">
+    <button class="x" data-close aria-label="Close">&times;</button>
+    <div class="addr-tag">87&ndash;14 57th Road, Penthouse A</div>
+    <h3>Monthly payment calculator</h3>
+
+    <label>Home price</label>
+    <input id="calcPrice" inputmode="numeric" autocomplete="off">
+
+    <label>Down payment</label>
+    <div class="calc-split">
+      <input id="calcDown" inputmode="numeric" autocomplete="off">
+      <input id="calcDownPct" inputmode="decimal" autocomplete="off" aria-label="Down payment percent">
+    </div>
+
+    <label>Loan term</label>
+    <select id="calcTerm">
+      <option value="30">30 years</option>
+      <option value="15">15 years</option>
+    </select>
+
+    <label>Interest rate <span class="rate-src" id="calcRateSrc">&middot; editable estimate</span></label>
+    <input id="calcRate" inputmode="decimal" autocomplete="off">
+
+    <div class="calc-rows">
+      <div><span>Mortgage amount</span><b id="outLoan">&mdash;</b></div>
+      <div><span>Mortgage payment</span><b id="outPI">&mdash;</b></div>
+      <div><span>Common charges<em>Monthly condominium charges covering building operations and shared upkeep.</em></span><b id="outCommon">&mdash;</b></div>
+      <div><span>Real estate taxes<em>Estimated monthly New York City property taxes for the unit.</em></span><b id="outTax">&mdash;</b></div>
+    </div>
+
+    <div class="calc-total"><span>Estimated monthly payment</span><b id="outTotal">&mdash;</b></div>
+
+    <p class="calc-note">Estimates for informational purposes only. The mortgage payment covers principal and interest; homeowner&rsquo;s insurance and any mortgage insurance are not included. Actual amounts and financing terms vary &mdash; please confirm with your lender.</p>
+  </div>
+</div>
+
+<script>
+/* ---------- monthly payment calculator ---------- */
+(function(){
+  var LIST_PRICE = 800000;   // asking price
+  var COMMON     = 997.15;   // monthly common charges
+  var TAXES      = 416.33;   // monthly real estate taxes
+  var DEFAULT_PCT = 20;      // conventional down payment (editable)
+  var RATE30 = 6.5, RATE15 = 5.75;
+
+  var modal = document.getElementById('m-calc');
+  var elPrice = document.getElementById('calcPrice');
+  if(!modal || !elPrice) return;
+  var elDown = document.getElementById('calcDown'), elPct = document.getElementById('calcDownPct');
+  var elTerm = document.getElementById('calcTerm'), elRate = document.getElementById('calcRate');
+  var outLoan = document.getElementById('outLoan'), outPI = document.getElementById('outPI');
+  var outCommon = document.getElementById('outCommon'), outTax = document.getElementById('outTax');
+  var outTotal = document.getElementById('outTotal');
+  var rateTouched = false;
+
+  function digits(v){ return String(v||'').replace(/[^\d]/g,''); }
+  function money(n){ return '$' + Math.round(n).toLocaleString('en-US'); }
+  function money2(n){ return '$' + n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function num(v){ var n=parseFloat(String(v||'').replace(/[^\d.]/g,'')); return isNaN(n)?0:n; }
+  // standard amortising payment: P·r(1+r)^n / ((1+r)^n − 1)
+  function monthlyPI(principal, annualPct, years){
+    if(principal<=0) return 0;
+    var r=(annualPct/100)/12, n=years*12;
+    if(r<=0) return principal/n;
+    var f=Math.pow(1+r,n);
+    return principal*r*f/(f-1);
+  }
+  function recalc(){
+    var price=num(digits(elPrice.value));
+    var down=num(digits(elDown.value)); if(down>price) down=price;
+    var loan=Math.max(0, price-down);
+    var years=parseInt(elTerm.value,10)||30;
+    var pi=monthlyPI(loan, num(elRate.value), years);
+    outLoan.textContent=money(loan);
+    outPI.textContent=money(pi);
+    outCommon.textContent=money2(COMMON);
+    outTax.textContent=money2(TAXES);
+    outTotal.textContent=money(pi+COMMON+TAXES);
+  }
+  function setPrice(v){ elPrice.value = v ? money(v) : ''; }
+  function setDown(v){ elDown.value = v ? money(v) : '$0'; }
+  function setPct(p){ elPct.value = (Math.round(p*100)/100) + '%'; }
+
+  // price changes -> keep the percentage, recompute the dollar down payment
+  elPrice.addEventListener('input', function(){ var price=num(digits(elPrice.value)); setPrice(price); setDown(price*num(elPct.value)/100); recalc(); });
+  // dollars typed -> update the percentage
+  elDown.addEventListener('input', function(){ var price=num(digits(elPrice.value)), down=num(digits(elDown.value)); setDown(down); setPct(price>0?(down/price)*100:0); recalc(); });
+  // percentage typed -> update the dollars (allow typing "12." mid-entry)
+  elPct.addEventListener('input', function(){ var raw=elPct.value.replace(/[^\d.]/g,''); var pct=num(raw); if(pct>100)pct=100; elPct.value=raw+'%'; var price=num(digits(elPrice.value)); setDown(price*pct/100); recalc(); });
+  elPct.addEventListener('blur', function(){ setPct(num(elPct.value)); });
+  elRate.addEventListener('input', function(){ rateTouched=true; recalc(); });
+  elRate.addEventListener('blur', function(){ var r=num(elRate.value); elRate.value=r?r+'%':''; recalc(); });
+  // switching term swaps in that term's benchmark rate (unless it's been hand-edited)
+  elTerm.addEventListener('change', function(){ if(!rateTouched){ elRate.value=((elTerm.value==='15')?RATE15:RATE30)+'%'; } recalc(); });
+
+  // seed defaults
+  setPrice(LIST_PRICE); setPct(DEFAULT_PCT); setDown(LIST_PRICE*DEFAULT_PCT/100);
+  elRate.value = RATE30 + '%'; recalc();
+
+  // open / close (mirrors the sign-in modal)
+  function open(){ modal.classList.add('open'); if(window.__phaTrack) window.__phaTrack('calc_open','calculator'); }
+  function close(){ modal.classList.remove('open'); }
+  document.addEventListener('click', function(e){ var t=e.target.closest('[data-open="calc"]'); if(t){ e.preventDefault(); open(); } });
+  modal.addEventListener('click', function(e){ if(e.target.hasAttribute('data-close')) close(); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') close(); });
+})();
+</script>
 
 <script>
 /* ---------- sign-in tab + form ---------- */
