@@ -308,8 +308,6 @@
       <img class="slide" src="assets/photo-10.jpg" alt="Study with built-in shelving">
     </div>
 
-    <div class="status-flag"><span class="pip" aria-hidden="true"></span>Coming Soon</div>
-
     <div class="agent-card">
       <img src="assets/ian-headshot.jpg" alt="Ian Gong">
       <div class="who">
@@ -402,9 +400,9 @@
       <div class="panel on" data-panel="photos">
         <div class="viewer">
           <button class="nav prev" id="tPrev" aria-label="Previous">&#8249;</button>
-          <img id="tImg" src="assets/photo-1.jpg" alt="87-14 57th Road Penthouse A">
+          <img id="tImg" src="assets/gallery-1.jpg" alt="87-14 57th Road Penthouse A">
           <button class="nav next" id="tNext" aria-label="Next">&#8250;</button>
-          <div class="counter"><span id="tNum">1</span> / 10</div>
+          <div class="counter"><span id="tNum">1</span> / <span id="tTot">28</span></div>
         </div>
         <div class="thumbs" id="thumbs"></div>
         <p class="disclaimer">Interiors are professionally staged.</p>
@@ -461,9 +459,9 @@
 
 <script>
 (function(){
-  var TOTAL = 10;
-  var DEFAULT_PHOTOS = []; for(var i=1;i<=TOTAL;i++) DEFAULT_PHOTOS.push('assets/photo-'+i+'.jpg');
-  var photos = DEFAULT_PHOTOS.slice();   // replaced below by the managed gallery when it has photos
+  var TOTAL = 28;
+  var DEFAULT_PHOTOS = []; for(var i=1;i<=TOTAL;i++) DEFAULT_PHOTOS.push('assets/gallery-'+i+'.jpg');
+  var photos = DEFAULT_PHOTOS.slice();   // the lightbox gallery (28 StreetEasy photos); the hero above uses photo-N.jpg
 
   /* ---- hero auto slideshow ---- */
   var slides = Array.prototype.slice.call(document.querySelectorAll('#slides .slide'));
@@ -511,10 +509,11 @@
   });
 
   /* ---- tour photo viewer ---- */
-  var tImg = document.getElementById('tImg'), tNum = document.getElementById('tNum'), thumbs = document.getElementById('thumbs');
+  var tImg = document.getElementById('tImg'), tNum = document.getElementById('tNum'), thumbs = document.getElementById('thumbs'), tTot = document.getElementById('tTot');
   var tIdx = 0;
   function buildThumbs(){
     thumbs.innerHTML = '';
+    if(tTot) tTot.textContent = photos.length;
     photos.forEach(function(src, i){
       var t = new Image(); t.src = src; t.alt = 'Photo '+(i+1); if(i===tIdx) t.className='on';
       t.addEventListener('click', function(){ showTour(i); });
@@ -522,6 +521,7 @@
     });
   }
   buildThumbs();
+  showTour(0);
   function showTour(i){
     tIdx = (i + photos.length) % photos.length;
     tImg.src = photos[tIdx]; tNum.textContent = tIdx+1;
@@ -532,14 +532,6 @@
   }
   document.getElementById('tPrev').addEventListener('click', function(){ showTour(tIdx-1); });
   document.getElementById('tNext').addEventListener('click', function(){ showTour(tIdx+1); });
-
-  // Load the admin-managed gallery; if it has photos, they replace the built-in set
-  // (thumbnails, main viewer and lightbox all read the `photos` array). Falls back
-  // silently to the built-in photos if the gallery is empty or unreachable.
-  fetch('/api/photos').then(function(r){ return r.json(); }).then(function(d){
-    var list = (d && d.photos) ? d.photos.map(function(p){ return p.url; }).filter(Boolean) : [];
-    if(list.length){ photos = list; tIdx = 0; buildThumbs(); showTour(0); }
-  }).catch(function(){});
 
   /* ---- lightbox ---- */
   var lb = document.getElementById('lightbox'), lbImg = document.getElementById('lbImg');
