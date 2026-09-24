@@ -53,7 +53,7 @@
   @media(max-width:760px){ .crawl-cols{grid-template-columns:1fr;gap:8px} }
   #visitorMap{height:440px;border-radius:10px;overflow:hidden;background:#e9eef1}
   #visitorMap .leaflet-container{font:inherit}
-  #visitorMap .leaflet-tile{filter:grayscale(.72) brightness(1.05) contrast(.95)}  /* mute OSM into a light basemap */
+  #visitorMap .leaflet-tile{filter:none}  /* Esri light-gray basemap is already muted */
   .leaflet-popup-content{font-size:13px}
   .map-empty{color:var(--muted);font-size:13px;padding:20px 0}
   .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
@@ -757,10 +757,14 @@
     points = points || [];
     if(typeof L === 'undefined'){ el.style.display = 'none'; empty.hidden = false; empty.textContent = 'Map library could not load (offline?).'; return; }
     if(!_map){
-      _map = L.map('visitorMap', { worldCopyJump:true, minZoom:1, scrollWheelZoom:false }).setView([25, 0], 2);
-      // OpenStreetMap tiles — free, no API key (CARTO now requires a key)
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        { attribution:'&copy; OpenStreetMap contributors', subdomains:'abc', maxZoom:19 }).addTo(_map);
+      _map = L.map('visitorMap', { worldCopyJump:true, minZoom:1, maxZoom:12, scrollWheelZoom:false }).setView([20, 0], 2);
+      // Esri "Light Gray Canvas" — free, no API key, English (Latin) place labels
+      // worldwide (fixes OSM's local-script labels), already muted so it reads as a
+      // light basemap. Base = land/water, Reference = the English labels on top.
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+        { attribution:'Tiles &copy; Esri', maxZoom:16 }).addTo(_map);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+        { maxZoom:16 }).addTo(_map);
     }
     if(_heat){ _map.removeLayer(_heat); _heat = null; }
     _mapMarkers.forEach(function(m){ _map.removeLayer(m); }); _mapMarkers = [];
@@ -779,7 +783,8 @@
       m.bindPopup('<b>'+esc(loc)+'</b><br>'+p.events+' event'+(p.events===1?'':'s'));
       _mapMarkers.push(m);
     });
-    try { _map.fitBounds(L.latLngBounds(points.map(function(p){ return [p.lat, p.lon]; })), { padding:[30,30], maxZoom:6 }); } catch(e){}
+    // Stay at the world view at all times — don't auto-zoom into the points
+    // (that's what pushed the map into East Asia with local-language labels).
     setTimeout(function(){ _map.invalidateSize(); }, 60);
   }
 
