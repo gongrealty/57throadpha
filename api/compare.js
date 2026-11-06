@@ -82,7 +82,7 @@ button:active{transform:scale(.98)}
 </style></head><body>
 <form class="card" method="post" action="/compare">
   <div class="k">87-14 57th Road, Penthouse A</div>
-  <h1>Buyer comparison</h1>
+  <h1>Buyer Comparison</h1>
   <p>A private report Ian Gong shares with buyers and their agents. Enter your name and the password he gave you.</p>
   <label for="agent">Agent name</label>
   <input id="agent" name="agent" type="text" autocomplete="username" autocapitalize="words" maxlength="80" required value="${attr(name)}"${name ? '' : ' autofocus'}>
