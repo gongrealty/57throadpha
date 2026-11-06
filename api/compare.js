@@ -65,20 +65,22 @@ function signInPage(error, name){
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow"><title>Buyer Comparison | 87-14 57th Road PHA</title>
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#14110e;--paper:#f6f1e9;--card:#fffdf9;--muted:#6f675e;--gold:#b48a3f;--gold-ink:#8a6526;--line:rgba(20,17,14,.12);--err:#b4412f}
 @media (prefers-color-scheme:dark){:root{--ink:#f2ece2;--paper:#15120f;--card:#1e1a16;--muted:#b3a99c;--gold:#d1a75a;--gold-ink:#e0bb73;--line:rgba(242,236,226,.13);--err:#f08a76}}
 *{box-sizing:border-box;margin:0;padding:0}
-body{min-height:100dvh;display:grid;place-items:center;padding:16px;background:var(--paper);color:var(--ink);font-family:"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
-.card{width:min(420px,100%);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px;box-shadow:0 18px 50px rgba(60,44,20,.12)}
+body{min-height:100dvh;display:grid;place-items:center;padding:16px;background:var(--paper);color:var(--ink);font-family:"Plus Jakarta Sans","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.card{width:min(420px,100%);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:36px;box-shadow:0 18px 50px rgba(60,44,20,.12)}
 .k{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-ink);font-weight:600}
-h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:30px;line-height:1.1;margin-top:10px}
+h1{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500;font-size:40px;line-height:1.05;margin-top:10px;letter-spacing:-.01em}
 p{color:var(--muted);font-size:15px;margin-top:10px;line-height:1.5}
 label{display:block;font-size:13.5px;font-weight:600;margin-top:24px}
-input{width:100%;font:inherit;font-size:16px;margin-top:8px;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+input{width:100%;font:inherit;font-size:16px;margin-top:8px;padding:12px 14px;border-radius:4px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
 input:focus{outline:2px solid var(--gold);border-color:transparent}
 .err{color:var(--err);font-size:13.5px;min-height:20px;margin-top:8px}
-button{width:100%;margin-top:8px;font:inherit;font-size:15px;font-weight:600;padding:14px;border:0;border-radius:999px;background:var(--ink);color:var(--paper);cursor:pointer;transition:transform .2s}
+button{width:100%;margin-top:8px;font:inherit;font-size:15px;font-weight:600;padding:15px;border:0;border-radius:4px;background:var(--ink);color:var(--paper);cursor:pointer;transition:transform .2s}
 button:active{transform:scale(.98)}
 .foot{margin-top:20px;font-size:13px;color:var(--muted)}
 .foot a{color:inherit}
@@ -93,7 +95,7 @@ button:active{transform:scale(.98)}
   <input id="pw" name="password" type="password" autocomplete="current-password" required${name ? ' autofocus' : ''}>
   <div class="err" role="alert">${msg}</div>
   <button type="submit">Open the report</button>
-  <div class="foot">Need access? <a href="tel:+19143318881">914-331-8881</a> or <a href="mailto:i.gong@casa-blanca.com">i.gong@casa-blanca.com</a></div>
+  <div class="foot">Need access? Call Ian at <a href="tel:+19143318881">914-331-8881</a></div>
 </form></body></html>`;
 }
 
