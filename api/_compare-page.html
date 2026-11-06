@@ -582,11 +582,11 @@ function showDots(i){
 }
 function cardHtml(i){
   var s = STEPS[i], win = i === LAST;
-  var drop = i === 0 ? 'Start' : (counts[i] - counts[i - 1]) + ' homes';
+  var drop = i === 0 ? 'Start' : win ? 'The only one' : (counts[i - 1] - counts[i]) + ' ruled out';
   return '<button type="button" class="fcard' + (win ? ' win' : '') + '" data-i="' + i + '">' +
     '<span class="fn num">' + counts[i] + '</span>' +
     '<span><span class="ft"><span class="lg">' + esc(win ? 'Penthouse A. ' + s.name + '.' : s.name) + '</span><span class="sm">' + esc(s.short) + '</span></span><span class="fs">' + esc(s.sub) + '</span></span>' +
-    '<span class="fd">' + drop.replace('-', '&minus;') + '</span></button>';
+    '<span class="fd">' + esc(drop) + '</span></button>';
 }
 // newest card goes on top; the older ones glide down (FLIP), like Magic UI's Animated List
 function pushCard(i, animate){
