@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<base href="/">
 <title>What $800K Buys in Western Queens | 87-14 57th Road PHA</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#14110e">
@@ -13,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="preload" as="image" href="assets/photo-3.jpg">
+<link rel="preload" as="image" href="/assets/skyline.jpg">
 
 <style>
 :root{
@@ -47,7 +46,7 @@ h1,h2,h3{font-family:var(--display);font-weight:500;letter-spacing:-.012em;text-
 h2{font-size:clamp(36px,4.6vw,58px);line-height:1.04}
 h2 em,h1 em{font-style:italic;font-weight:400}
 .lede{color:var(--muted);font-size:17px;max-width:56ch;margin-top:18px;text-wrap:pretty}
-section{padding:120px 0 132px}
+section{padding:120px 0 132px;scroll-margin-top:64px}
 .label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--gold-ink)}
 
 /* nav */
@@ -72,8 +71,8 @@ section{padding:120px 0 132px}
 
 /* hero */
 .hero{position:relative;min-height:min(80dvh,760px);display:flex;align-items:flex-end;color:#f5f0e8;overflow:hidden;background:#1a1611}
-.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.06);animation:settle 2.4s var(--ease) forwards}
-.hero:before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(14,11,8,.74) 0%,rgba(14,11,8,.5) 38%,rgba(14,11,8,.08) 72%),linear-gradient(180deg,rgba(14,11,8,.25) 0%,transparent 30%,rgba(14,11,8,.55) 100%)}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 42%;transform:scale(1.06);animation:settle 2.4s var(--ease) forwards}
+.hero:before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(14,11,8,.62) 0%,rgba(14,11,8,.4) 36%,rgba(14,11,8,0) 66%),linear-gradient(180deg,rgba(14,11,8,.25) 0%,transparent 30%,rgba(14,11,8,.55) 100%)}
 .hero .wrap{position:relative;z-index:2;width:100%;padding-top:96px;padding-bottom:60px}
 .hero .label{color:#e3c993}
 .hero h1{font-size:clamp(42px,5.2vw,76px);line-height:1.02;margin-top:18px;max-width:19ch;padding-bottom:4px}
@@ -94,17 +93,26 @@ section{padding:120px 0 132px}
 
 /* funnel */
 .funnel .grid{display:grid;grid-template-columns:5fr 6fr;gap:72px;align-items:center;margin-top:56px}
-.filters{list-style:none;border-top:1px solid var(--line)}
-.f-row{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:16px;width:100%;text-align:left;padding:20px 4px 20px 22px;border-bottom:1px solid var(--line);position:relative;transition:background .25s,color .25s;color:var(--muted)}
-.f-row:before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:2px;background:var(--gold);transform:scaleY(0);transition:transform .35s var(--ease)}
-.f-row:hover{color:var(--ink);background:var(--gold-wash)}
-.f-row.active{color:var(--ink)}
-.f-row.active:before{transform:scaleY(1)}
-.f-row .ft{font-size:16px;font-weight:500}
-.f-row .fs{display:block;font-size:13.5px;color:var(--soft);font-weight:400;margin-top:3px;max-height:0;overflow:hidden;opacity:0;transition:max-height .4s var(--ease),opacity .3s}
-.f-row.active .fs{max-height:60px;opacity:1}
-.f-row .fc{font-family:var(--display);font-size:30px;font-weight:500;line-height:1;min-width:2ch;text-align:right}
-.f-row.done .fc{color:var(--soft)}
+.feed-col{align-self:start}
+.feed{list-style:none;display:flex;flex-direction:column;gap:12px;min-height:560px}
+.feed li{will-change:transform}
+.feed li.pop{animation:pop .6s cubic-bezier(.34,1.45,.64,1) both}
+@keyframes pop{0%{opacity:0;transform:translateY(-14px) scale(.92)}100%{opacity:1;transform:none}}
+.fcard{display:grid;grid-template-columns:64px 1fr auto;gap:18px;align-items:center;width:100%;text-align:left;padding:16px 20px 16px 16px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--card);
+  box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 14px 30px -20px rgba(60,44,20,.35);transition:opacity .45s var(--ease),border-color .25s,transform .2s var(--ease)}
+.fcard:hover{border-color:var(--line-2)}
+.fcard:active{transform:scale(.99)}
+.feed li + li .fcard{opacity:.6}
+.feed li + li .fcard:hover{opacity:1}
+.fcard.sel{border-color:var(--ink);opacity:1 !important}
+.fcard .fn{font-family:var(--display);font-size:40px;font-weight:500;line-height:1;text-align:center;letter-spacing:-.02em}
+.fcard .ft{display:block;font-size:15.5px;font-weight:600;line-height:1.3}
+.fcard .fs{display:block;font-size:13.5px;color:var(--muted);margin-top:3px;line-height:1.4}
+.fcard .sm{display:none}
+.fcard .fd{font-size:12.5px;font-weight:600;color:var(--soft);white-space:nowrap;font-variant-numeric:tabular-nums}
+.fcard.win{background:linear-gradient(135deg,rgba(168,134,74,.16),rgba(168,134,74,.06));border-color:var(--gold)}
+.fcard.win .fn,.fcard.win .ft{color:var(--gold-ink)}
+.fcard.win .fd{color:var(--gold-ink)}
 .replay{margin-top:18px;font-size:13.5px;font-weight:600;color:var(--gold-ink);display:inline-flex;gap:8px;align-items:center;transition:color .2s}
 .replay:hover{color:var(--ink)}
 .count{display:flex;align-items:baseline;gap:16px;margin-bottom:28px}
@@ -279,7 +287,11 @@ footer .lic{font-style:italic}
   .fact b{font-size:28px}
   .dots{gap:9px}
   .count{margin-bottom:20px}
-  .f-row{padding:16px 4px 16px 18px}
+  .feed{min-height:0}
+  .fcard{grid-template-columns:48px 1fr auto;gap:14px;padding:14px 16px 14px 12px}
+  .fcard .fn{font-size:32px}
+  .fcard .lg{display:none}
+  .fcard .sm{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .results{grid-template-columns:1fr}
   .s-row{grid-template-columns:1fr auto;gap:12px 16px}
   .s-row .track{grid-column:1/-1;grid-row:2}
@@ -333,7 +345,7 @@ footer .lic{font-style:italic}
 
 <main id="main">
   <header class="hero">
-    <img src="assets/photo-3.jpg" alt="Living room at 87-14 57th Road Penthouse A" fetchpriority="high">
+    <img src="/assets/skyline.jpg" alt="The Manhattan skyline seen over Queens rooftops from Penthouse A" fetchpriority="high">
     <div class="wrap">
       <div class="label">A private buyer comparison<span class="hide-sm">, November 2026</span></div>
       <h1>What $800K buys in Western Queens, <em>and what it doesn't.</em></h1>
@@ -358,10 +370,10 @@ footer .lic{font-style:italic}
   <section class="funnel" id="field">
     <div class="wrap">
       <h2 class="reveal">Thirty-three homes in. <em>One comes out.</em></h2>
-      <p class="lede reveal">Every condo and house within about $100K of Penthouse A, filtered by what a buyer moving up actually needs. Tap any filter.</p>
+      <p class="lede reveal">Every condo and house within about $100K of Penthouse A, filtered by what a buyer moving up actually needs. Tap any card to look back at that step.</p>
       <div class="grid">
-        <div>
-          <ul class="filters" id="filters"></ul>
+        <div class="feed-col">
+          <ol class="feed" id="feed" aria-live="polite" aria-label="Filters applied, newest first"></ol>
           <button class="replay" id="replay" type="button">Play it again <span aria-hidden="true">&#8635;</span></button>
         </div>
         <div class="field" aria-live="polite">
@@ -423,7 +435,7 @@ footer .lic{font-style:italic}
 
   <section class="contact">
     <div class="wrap">
-      <img src="assets/ian-headshot.jpg" alt="Ian Gong">
+      <img src="/assets/ian-headshot.jpg" alt="Ian Gong">
       <div>
         <h2>See it in person.</h2>
         <p>Ian Gong, Casa Blanca. Listing agent for 87-14 57th Road, Penthouse A.</p>
@@ -536,16 +548,16 @@ function hideTip(){ tip.classList.remove('show'); }
 
 /* ---------------- funnel: click-through filters, plays once on arrival ---------------- */
 var STEPS = [
-  { name:'Every home in the field', sub:'21 condos and 11 houses, plus Penthouse A. Co-ops left out.', label:'homes in the field', test:function(){ return true; } },
-  { name:'Three bedrooms', sub:'Most of the field is two-bedroom condos.', label:'have three bedrooms', test:function(h){ return h.br >= 3; } },
-  { name:'Two full bathrooms', sub:'Most of the three-bedroom houses have one and a half.', label:'also have two full baths', test:function(h){ return h.br >= 3 && h.fb >= 2; } },
-  { name:'1,200 square feet or more', sub:'A real step up in space, not just another room.', label:'are also 1,200+ sq ft', test:function(h){ return h.br >= 3 && h.fb >= 2 && h.sf >= 1200; } },
-  { name:'Condo living', sub:'The roof, boiler and facade are the building\'s job.', label:'are also condos', test:function(h){ return h.br >= 3 && h.fb >= 2 && h.sf >= 1200 && h.t === 'condo'; } },
-  { name:'A top-floor terrace with skyline views', sub:'This is where the field runs out.', label:'home has all of it', test:function(h){ return h.br >= 3 && h.fb >= 2 && h.sf >= 1200 && h.t === 'condo' && h.terrace && h.top; } }
+  { name:'Every home in the field', short:'Every home', sub:'21 condos and 11 houses, plus Penthouse A. Co-ops left out.', label:'homes in the field', test:function(){ return true; } },
+  { name:'Three bedrooms', short:'Three bedrooms', sub:'Most of the field is two-bedroom condos.', label:'have three bedrooms', test:function(h){ return h.br >= 3; } },
+  { name:'Two full bathrooms', short:'Two full baths', sub:'Most of the three-bedroom houses have one and a half.', label:'also have two full baths', test:function(h){ return h.br >= 3 && h.fb >= 2; } },
+  { name:'1,200 square feet or more', short:'1,200+ sq ft', sub:'A real step up in space, not just another room.', label:'are also 1,200+ sq ft', test:function(h){ return h.br >= 3 && h.fb >= 2 && h.sf >= 1200; } },
+  { name:'Condo living', short:'Condo living', sub:'The roof, boiler and facade are the building\'s job.', label:'are also condos', test:function(h){ return h.br >= 3 && h.fb >= 2 && h.sf >= 1200 && h.t === 'condo'; } },
+  { name:'A top-floor terrace with skyline views', short:'Penthouse A', sub:'This is where the field runs out.', label:'home has all of it', test:function(h){ return h.br >= 3 && h.fb >= 2 && h.sf >= 1200 && h.t === 'condo' && h.terrace && h.top; } }
 ];
 var order = HOMES.slice().sort(function(a,b){ return (a.t === b.t ? a.p - b.p : (a.t === 'condo' ? -1 : 1)); });
 order.splice(16, 0, PHA);
-var dotsEl = $('dots'), filtersEl = $('filters');
+var dotsEl = $('dots'), feed = $('feed');
 order.forEach(function(h){
   var d = document.createElement('button');
   d.type = 'button';
@@ -559,34 +571,58 @@ order.forEach(function(h){
   h._dot = d; dotsEl.appendChild(d);
 });
 var counts = STEPS.map(function(s){ return ALL.filter(s.test).length; });
-STEPS.forEach(function(s, i){
-  var liEl = document.createElement('li');
-  liEl.innerHTML = '<button type="button" class="f-row" data-i="' + i + '"><span><span class="ft">' + esc(s.name) + '</span><span class="fs">' + esc(s.sub) + '</span></span><span class="fc num">' + counts[i] + '</span></button>';
-  filtersEl.appendChild(liEl);
-});
-var rows = filtersEl.querySelectorAll('.f-row'), current = -1, timer = null;
-function setStep(i){
-  current = i;
+var LAST = STEPS.length - 1, shown = -1, timer = null;
+function showDots(i){
   var s = STEPS[i], left = 0;
   order.forEach(function(h){ var ok = s.test(h); if(ok) left++; h._dot.classList.toggle('out', !ok); });
   $('vCount').textContent = left;
   $('vLabel').textContent = left === 1 ? s.label : s.label.replace('home has', 'homes have');
-  rows.forEach(function(r, k){ r.classList.toggle('active', k === i); r.classList.toggle('done', k < i); r.setAttribute('aria-pressed', k === i ? 'true' : 'false'); });
-  PHA._dot.classList.toggle('win', i === STEPS.length - 1);
+  PHA._dot.classList.toggle('win', i === LAST);
+  feed.querySelectorAll('.fcard').forEach(function(c){ c.classList.toggle('sel', +c.dataset.i === i && i !== shown); c.setAttribute('aria-pressed', +c.dataset.i === i ? 'true' : 'false'); });
+}
+function cardHtml(i){
+  var s = STEPS[i], win = i === LAST;
+  var drop = i === 0 ? 'Start' : (counts[i] - counts[i - 1]) + ' homes';
+  return '<button type="button" class="fcard' + (win ? ' win' : '') + '" data-i="' + i + '">' +
+    '<span class="fn num">' + counts[i] + '</span>' +
+    '<span><span class="ft"><span class="lg">' + esc(win ? 'Penthouse A. ' + s.name + '.' : s.name) + '</span><span class="sm">' + esc(s.short) + '</span></span><span class="fs">' + esc(s.sub) + '</span></span>' +
+    '<span class="fd">' + drop.replace('-', '&minus;') + '</span></button>';
+}
+// newest card goes on top; the older ones glide down (FLIP), like Magic UI's Animated List
+function pushCard(i, animate){
+  var items = Array.prototype.slice.call(feed.children);
+  var before = items.map(function(e){ return e.getBoundingClientRect().top; });
+  var li = document.createElement('li');
+  li.innerHTML = cardHtml(i);
+  li.firstChild.addEventListener('click', function(){ pick(i); });
+  if(animate) li.className = 'pop';
+  feed.insertBefore(li, feed.firstChild);
+  shown = i;
+  if(animate){
+    items.forEach(function(e, k){
+      var dy = before[k] - e.getBoundingClientRect().top;
+      if(!dy) return;
+      e.style.transition = 'none'; e.style.transform = 'translateY(' + dy + 'px)';
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ e.style.transition = 'transform .6s cubic-bezier(.16,1,.3,1)'; e.style.transform = ''; }); });
+    });
+  }
+  showDots(i);
 }
 function stopPlay(){ if(timer){ clearInterval(timer); timer = null; } }
+function finishNow(){ stopPlay(); while(shown < LAST) pushCard(shown + 1, false); }
+function pick(i){ finishNow(); showDots(i); track('compare_filter', String(i)); }
 function play(){
-  stopPlay(); setStep(0);
-  if(reduce){ setStep(STEPS.length - 1); return; }
-  timer = setInterval(function(){ if(current >= STEPS.length - 1){ stopPlay(); return; } setStep(current + 1); }, 1150);
+  stopPlay(); feed.innerHTML = ''; shown = -1;
+  if(reduce){ for(var k = 0; k <= LAST; k++) pushCard(k, false); return; }
+  pushCard(0, true);
+  timer = setInterval(function(){ if(shown >= LAST){ stopPlay(); return; } pushCard(shown + 1, true); }, 1250);
 }
-rows.forEach(function(r){ r.addEventListener('click', function(){ stopPlay(); setStep(+r.dataset.i); track('compare_filter', String(r.dataset.i)); }); });
 $('replay').addEventListener('click', play);
-setStep(0);
+pushCard(0, false);
 if('IntersectionObserver' in window){
-  var fo = new IntersectionObserver(function(en){ if(en[0].isIntersecting){ fo.disconnect(); setTimeout(play, 350); } }, { threshold: .45 });
-  fo.observe(document.querySelector('.funnel .grid'));
-} else setStep(STEPS.length - 1);
+  var fo = new IntersectionObserver(function(en){ if(en[0].isIntersecting){ fo.disconnect(); setTimeout(play, 300); } }, { threshold: .5 });
+  fo.observe(dotsEl);
+} else finishNow();
 
 /* ---------------- chart: the whole plot is the hit area; the nearest home wins ---------------- */
 var svg = $('scatter'), NS = 'http://www.w3.org/2000/svg';
