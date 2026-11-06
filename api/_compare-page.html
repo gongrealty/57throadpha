@@ -724,7 +724,7 @@ function renderDetail(){
 }
 function photoFor(h){
   if(PHOTOS.indexOf(h.id) < 0) return '';
-  return '<figure class="shot"><img src="/compare?img=' + h.id + '" alt="' + esc((h.id === 'pha' ? 'View from Penthouse A' : 'Outdoor space at ' + (addrOf(h) || h.label))) + '" decoding="async"></figure>';
+  return '<figure class="shot"><img src="/compare?img=' + h.id + '" alt="' + esc((h.id === 'pha' ? 'View from Penthouse A' : 'View from ' + (addrOf(h) || h.label))) + '" decoding="async"></figure>';
 }
 var _render = renderDetail;
 renderDetail = function(){
