@@ -116,7 +116,8 @@
   .muted{color:var(--muted)}
   .fold-btn{font:inherit;font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;margin-bottom:16px}
   .fold-btn:hover{border-color:var(--gold)}
-  #livePanel.folded .livechart-wrap{display:none}
+  #livePanel.folded .rows,#livePanel.folded .livechart-wrap,#livePanel.folded .live-foot{display:none}
+  #livePanel.folded h2,#livePanel.folded .fold-btn{margin-bottom:0}
   .sm-list{display:grid;gap:0}
   .sm-row{display:grid;grid-template-columns:22px minmax(0,1fr) 90px 90px 150px;gap:14px;align-items:center;padding:12px 4px;border-bottom:1px solid #f0ece4;font-size:13px}
   .sm-row:last-child{border-bottom:0}
@@ -249,7 +250,7 @@
     <div class="panel" id="livePanel" hidden>
       <div class="panel-head">
         <h2>Inside right now</h2>
-        <button class="fold-btn" id="liveFold" type="button" aria-expanded="true" aria-controls="liveChart">Hide graph</button>
+        <button class="fold-btn" id="liveFold" type="button" aria-expanded="true" aria-controls="liveRows liveChart">Hide</button>
       </div>
       <div class="rows" id="liveRows"></div>
       <div class="livechart-wrap" id="liveChart"></div>
@@ -991,7 +992,7 @@
     if(!btn || !panel) return;
     function set(folded){
       panel.classList.toggle('folded', folded);
-      btn.textContent = folded ? 'Show graph' : 'Hide graph';
+      btn.textContent = folded ? 'Show' : 'Hide';
       btn.setAttribute('aria-expanded', folded ? 'false' : 'true');
     }
     var start = false; try { start = localStorage.getItem('pha_live_folded') === '1'; } catch(e){}
