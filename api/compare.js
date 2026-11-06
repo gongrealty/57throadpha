@@ -1,7 +1,7 @@
 // /compare (rewritten here by vercel.json): password-protected buyer comparison.
 //   GET  /compare                 -> the full page if the visitor holds a valid cookie, else the sign-in page
-//   POST /compare  agent=...&password=... -> both must exactly match env COMPARE_AGENT + COMPARE_PASSWORD
-//                                  (surrounding spaces ignored, case counts); sets a 30-day HttpOnly cookie
+//   POST /compare  agent=...&password=... -> must match env COMPARE_AGENT (any capitalization) + COMPARE_PASSWORD (exact);
+//                                  sets a 30-day HttpOnly cookie
 //   POST /compare  action=lock    -> clears the cookie (sign out)
 // Nothing of the comparison (page, addresses, notes) is sent before the password is checked here.
 // Changing either setting signs everyone out, because the cookie is signed with both.
@@ -120,7 +120,8 @@ module.exports = async (req, res) => {
     const agent = String(body.agent || '').trim().slice(0, 80);
     const given = String(body.password || '').trim();
     if(!agent){ send(res, 400, signInPage('name')); return; }
-    const ok = !!(sameSecret(agent, agentName()) & sameSecret(given, pw()));   // check both, no early exit
+    const norm = v => String(v).toLowerCase().replace(/\s+/g, ' ').trim();   // agent name: letters must match, case and extra spaces ignored
+    const ok = !!(sameSecret(norm(agent), norm(agentName())) & sameSecret(given, pw()));   // check both, no early exit
     await logSignIn(req, agent, ok);
     if(ok){ setCookie(res, makeToken(), DAYS * 86400); redirect(res); return; }
     await new Promise(r => setTimeout(r, 600));   // slow down guessing
