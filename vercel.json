@@ -5,7 +5,7 @@
   "outputDirectory": "public",
   "cleanUrls": true,
   "functions": {
-    "api/compare.js": { "includeFiles": "api/_compare-page.html" }
+    "api/compare.js": { "includeFiles": "api/{_compare-page.html,_compare-img/**}" }
   },
   "rewrites": [
     { "source": "/compare",     "destination": "/api/compare" },

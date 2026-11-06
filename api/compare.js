@@ -14,6 +14,8 @@ const PRIVATE = require('./_compare-private');
 const COOKIE = 'pha_cmp';
 const DAYS = 30;
 const PAGE = path.join(__dirname, '_compare-page.html');
+const IMG_DIR = path.join(__dirname, '_compare-img');   // <id>.jpg, served only to signed-in visitors
+function photoIds(){ try { return fs.readdirSync(IMG_DIR).filter(f => /^[a-z0-9]+\.jpg$/.test(f)).map(f => f.slice(0, -4)); } catch(e){ return []; } }
 
 function pw(){ return String(process.env.COMPARE_PASSWORD || '').trim(); }
 function agentName(){ return String(process.env.COMPARE_AGENT || '').trim(); }
@@ -127,9 +129,21 @@ module.exports = async (req, res) => {
   }
   if(req.method !== 'GET' && req.method !== 'HEAD'){ res.statusCode = 405; res.end(); return; }
 
-  if(!validToken(parseCookies(req)[COOKIE])){ send(res, 200, signInPage(configured() ? '' : 'off')); return; }
+  const signedIn = validToken(parseCookies(req)[COOKIE]);
+  const img = new URL(req.url, 'http://x').searchParams.get('img');
+  if(img !== null){
+    if(!signedIn || !/^(?:[ch]\d{1,2}|pha)$/.test(img)){ res.statusCode = 404; res.end(); return; }
+    let buf; try { buf = fs.readFileSync(path.join(IMG_DIR, img + '.jpg')); } catch(e){ res.statusCode = 404; res.end(); return; }
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('Cache-Control', 'private, max-age=86400');
+    res.end(buf);
+    return;
+  }
+  if(!signedIn){ send(res, 200, signInPage(configured() ? '' : 'off')); return; }
 
   const html = fs.readFileSync(PAGE, 'utf8')
+    .replace('/*__PHOTOS__*/[]', JSON.stringify(photoIds()))
     .replace('/*__PRIV__*/null', JSON.stringify(PRIVATE).replace(/</g, '\\u003c'));
   send(res, 200, html);
 };

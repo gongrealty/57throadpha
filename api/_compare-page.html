@@ -40,7 +40,7 @@ button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
 :focus-visible{outline:1.5px solid var(--gold);outline-offset:3px}
 .skip{position:absolute;left:-9999px}
 .skip:focus{left:16px;top:12px;z-index:100;background:var(--paper);padding:8px 12px}
-.wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+.wrap{max-width:1360px;margin:0 auto;padding:0 40px}
 .num{font-variant-numeric:lining-nums tabular-nums}
 h1,h2,h3{font-family:var(--display);font-weight:500;letter-spacing:-.012em;text-wrap:balance}
 h2{font-size:clamp(36px,4.6vw,58px);line-height:1.04}
@@ -75,6 +75,9 @@ section{padding:120px 0 132px;scroll-margin-top:64px}
 .hero:before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(14,11,8,.62) 0%,rgba(14,11,8,.4) 36%,rgba(14,11,8,0) 66%),linear-gradient(180deg,rgba(14,11,8,.25) 0%,transparent 30%,rgba(14,11,8,.55) 100%)}
 .hero .wrap{position:relative;z-index:2;width:100%;padding-top:96px;padding-bottom:60px}
 .hero .label{color:#e3c993}
+.view-cap{position:absolute;z-index:2;right:max(40px,calc((100vw - 1360px) / 2 + 40px));bottom:60px;text-align:right;color:#f5f0e8;padding-right:18px;border-right:1px solid #e3c993}
+.view-cap .vc-k{display:block;font-family:var(--display);font-style:italic;font-size:24px;font-weight:500;line-height:1.1;text-shadow:0 1px 18px rgba(14,11,8,.55)}
+.view-cap .vc-s{display:block;font-size:12.5px;letter-spacing:.04em;color:rgba(245,240,232,.85);margin-top:5px;text-shadow:0 1px 12px rgba(14,11,8,.6)}
 .hero h1{font-size:clamp(42px,5.2vw,76px);line-height:1.02;margin-top:18px;max-width:19ch;padding-bottom:4px}
 .hero h1 em{color:#e3c993}
 .hero p{font-size:18px;max-width:46ch;margin-top:20px;color:rgba(245,240,232,.86)}
@@ -139,7 +142,7 @@ section{padding:120px 0 132px;scroll-margin-top:64px}
 
 /* chart */
 .chart-sec{background:var(--paper-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.chart-grid{display:grid;grid-template-columns:7fr 4fr;gap:56px;margin-top:56px;align-items:start}
+.chart-grid{display:grid;grid-template-columns:3fr 2fr;gap:56px;margin-top:56px;align-items:start}
 .plot svg{width:100%;height:auto;display:block;overflow:visible;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .ax{fill:var(--soft);font-size:11.5px;font-family:var(--sans);font-variant-numeric:tabular-nums}
 .ax-t{fill:var(--muted);font-size:11px;font-family:var(--sans);font-weight:600;letter-spacing:.1em}
@@ -174,11 +177,14 @@ section{padding:120px 0 132px;scroll-margin-top:64px}
 .vs .pha-col h4{color:var(--gold-ink)}
 .vs ul{list-style:none;display:flex;flex-direction:column;gap:9px;font-size:14.5px;line-height:1.4}
 .note{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:var(--ink-2);font-style:italic;font-family:var(--display);font-size:18px;line-height:1.4}
+.shot{margin-top:26px;border-radius:var(--r-lg);overflow:hidden;background:var(--line);aspect-ratio:3/2}
+.shot img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .5s var(--ease)}
+.shot img.ok{opacity:1}
 .detail .idle{color:var(--muted);font-size:15px;margin-top:14px;max-width:34ch}
 
 /* building */
 .sales .rows{margin-top:56px;border-top:1px solid var(--line)}
-.s-row{display:grid;grid-template-columns:minmax(220px,320px) 1fr 120px;gap:28px;align-items:center;padding:24px 0;border-bottom:1px solid var(--line)}
+.s-row{display:grid;grid-template-columns:minmax(200px,300px) 150px 1fr 130px;gap:32px;align-items:center;padding:24px 0;border-bottom:1px solid var(--line)}
 .s-row .who b{display:block;font-family:var(--display);font-size:24px;font-weight:500;line-height:1.1}
 .s-row .who span{font-size:13.5px;color:var(--muted)}
 .track{position:relative;height:2px}
@@ -186,6 +192,9 @@ section{padding:120px 0 132px;scroll-margin-top:64px}
 .fill:after{content:"";position:absolute;right:-5px;top:-4px;width:10px;height:10px;border-radius:50%;background:inherit}
 .s-row.pha .fill{background:var(--gold)}
 .s-row.pha .who b{color:var(--gold-ink)}
+.s-row .sz{font-family:var(--display);font-size:40px;font-weight:600;line-height:1;letter-spacing:-.015em}
+.s-row .sz small{display:block;font-family:var(--sans);font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.s-row.pha .sz{color:var(--gold-ink)}
 .s-row .v{font-family:var(--display);font-size:32px;font-weight:500;text-align:right;line-height:1}
 .s-row .v small{font-family:var(--sans);font-size:12px;color:var(--muted);font-weight:500;margin-left:2px}
 .sales .fine{margin-top:22px;font-size:13.5px;color:var(--soft);max-width:70ch}
@@ -276,6 +285,9 @@ footer .lic{font-style:italic}
   .hero{min-height:78dvh}
   .hero:before{background:linear-gradient(180deg,rgba(14,11,8,.3) 0%,rgba(14,11,8,.45) 35%,rgba(14,11,8,.82) 100%)}
   .hero .label{white-space:nowrap}
+  .view-cap{top:18px;bottom:auto;right:18px;padding-right:12px}
+  .view-cap .vc-k{font-size:18px}
+  .view-cap .vc-s{display:none}
   .hero .wrap{padding-bottom:36px}
   .hero p{font-size:16px}
   .facts .wrap{grid-template-columns:1fr 1fr}
@@ -293,8 +305,10 @@ footer .lic{font-style:italic}
   .fcard .lg{display:none}
   .fcard .sm{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .results{grid-template-columns:1fr}
-  .s-row{grid-template-columns:1fr auto;gap:12px 16px}
+  .s-row{grid-template-columns:1fr auto auto;gap:12px 18px}
   .s-row .track{grid-column:1/-1;grid-row:2}
+  .s-row .sz{font-size:28px}
+  .s-row .sz small{font-size:10px}
   .s-row .v{font-size:26px}
   .vs{grid-template-columns:1fr}
   .vs > div:first-child{padding-right:0}
@@ -346,6 +360,7 @@ footer .lic{font-style:italic}
 <main id="main">
   <header class="hero">
     <img src="/assets/skyline.jpg" alt="The Manhattan skyline seen over Queens rooftops from Penthouse A" fetchpriority="high">
+    <p class="view-cap"><span class="vc-k">The view from Penthouse A</span><span class="vc-s">Midtown and Lower Manhattan, from the top floor</span></p>
     <div class="wrap">
       <div class="label">A private buyer comparison<span class="hide-sm">, November 2026</span></div>
       <h1>What $800K buys in Western Queens, <em>and what it doesn't.</em></h1>
@@ -387,8 +402,8 @@ footer .lic{font-style:italic}
 
   <section class="chart-sec">
     <div class="wrap">
-      <h2 class="reveal">Price per foot can't show you <em>what's missing.</em></h2>
-      <p class="lede reveal">Every home by size and asking price. The dotted line is Penthouse A's $649 a foot. Tap anywhere near a home to compare it.</p>
+      <h2 class="reveal">Price per square foot can't show you <em>what's missing.</em></h2>
+      <p class="lede reveal">Every home by size and asking price. The dotted line marks Penthouse A's $649 per square foot. Tap anywhere near a home to compare it.</p>
       <div class="chart-grid">
         <div class="plot reveal">
           <svg id="scatter" viewBox="0 0 680 460" aria-label="Asking price against square feet for every home in the comparison"></svg>
@@ -402,9 +417,9 @@ footer .lic{font-style:italic}
   <section class="sales">
     <div class="wrap">
       <h2 class="reveal">Priced below <em>its own building.</em></h2>
-      <p class="lede reveal">Recent closed sales on the block, per square foot. Penthouse A asks less a foot than both recent sales at 87-14, with a third bedroom and a terrace on top.</p>
+      <p class="lede reveal">Recent closed sales in this building. Penthouse A is the largest of the three by more than 300 square feet, and it asks less per square foot than either.</p>
       <div class="rows" id="rows"></div>
-      <p class="fine">Closed sales are public record. Smaller apartments usually sell for more per foot, so treat this as a reference point, not an appraisal.</p>
+      <p class="fine">Closed sales are public record. Smaller apartments usually sell for more per square foot, so treat this as a reference point, not an appraisal.</p>
     </div>
   </section>
 
@@ -502,6 +517,7 @@ var HOMES = [
   {id:'h11',t:'house',p:793000,sf:1553,br:3,fb:null,hb:null,out:1,park:'?',wd:'?',elev:'no', label:'3BR house with backyard', sub:'Bath count not confirmed.'}
 ];
 var ALL = HOMES.concat([PHA]);
+var PHOTOS = /*__PHOTOS__*/[];   // ids that have a photo on the server
 var PRIV = /*__PRIV__*/null;   // street addresses + notes, injected by api/compare.js after sign-in
 
 /* ---------------- helpers ---------------- */
@@ -643,7 +659,7 @@ el('text', { x: M.l - 12, y: 8, 'text-anchor': 'end', 'class': 'ax-t' }).textCon
 var rate = PHA.p / PHA.sf, rx0 = Y0 / rate, rx1 = Math.min(X1, Y1 / rate);
 el('line', { x1: sx(rx0), y1: sy(Y0), x2: sx(rx1), y2: sy(rx1 * rate), 'class': 'ref' });
 el('text', { x: sx(rx1) + 8, y: sy(rx1 * rate) + 14, 'class': 'ref-t' }).textContent = '$649 / sf';
-el('text', { x: M.l + 14, y: M.t + 8, 'class': 'zone-t' }).textContent = 'Above the line: more per foot than Penthouse A';
+el('text', { x: M.l + 14, y: M.t + 8, 'class': 'zone-t' }).textContent = 'Above the line: more per square foot than Penthouse A';
 var ring = el('circle', { 'class': 'ring', r: 15, cx: -50, cy: -50 });
 var drawOrder = HOMES.concat([PHA]);
 drawOrder.forEach(function(h, i){
@@ -706,6 +722,17 @@ function renderDetail(){
     '<div class="pha-col"><h4>Penthouse A gives you</h4><ul>' + li(v.pha) + '</ul></div></div>' +
     (w ? '<p class="note">' + esc(w) + '</p>' : '');
 }
+function photoFor(h){
+  if(PHOTOS.indexOf(h.id) < 0) return '';
+  return '<figure class="shot"><img src="/compare?img=' + h.id + '" alt="' + esc((h.id === 'pha' ? 'View from Penthouse A' : 'Exterior of ' + (addrOf(h) || h.label))) + '" decoding="async"></figure>';
+}
+var _render = renderDetail;
+renderDetail = function(){
+  _render(); if(!selected) return;
+  $('detail').insertAdjacentHTML('beforeend', photoFor(selected));
+  var im = $('detail').querySelector('.shot img');
+  if(im){ if(im.complete) im.classList.add('ok'); else im.addEventListener('load', function(){ im.classList.add('ok'); }); }
+};
 selectHome(PHA);
 function showPoints(){ drawOrder.forEach(function(h){ h._pt.style.opacity = ''; h._pt.style.transform = ''; }); }
 if('IntersectionObserver' in window && !reduce){
@@ -715,16 +742,16 @@ if('IntersectionObserver' in window && !reduce){
 
 /* ---------------- building sales ---------------- */
 var SALES = [
-  { name:'87-14 57th Rd, #5A', sub:'Sold July 2026. 824 sf, 2 bd / 1 ba, $595K', v:722 },
-  { name:'87-14 57th Rd, #PHB', sub:'Sold September 2024. 925 sf, 2 bd / 2 ba, $650K', v:703 },
-  { name:'Penthouse A', sub:'Asking. 1,232 sf, 3 bd / 2 ba, $800K', v:649, pha:true },
-  { name:'87-03 57th Rd, #41', sub:'Sold February 2026. 1,000 sf, 2 bd / 2 ba, $638K', v:638 }
+  { name:'#5A', sub:'Sold July 2026. 2 bd / 1 ba, $595K', sf:824, v:722 },
+  { name:'#PHB', sub:'Sold September 2024. 2 bd / 2 ba, $650K', sf:925, v:703 },
+  { name:'Penthouse A', sub:'Asking. 3 bd / 2 ba, $800K', sf:1232, v:649, pha:true }
 ];
-var rowsEl = $('rows'), lo = 560, hi = 740;
+var rowsEl = $('rows'), lo = 600, hi = 740;
 SALES.forEach(function(s){
   var row = document.createElement('div');
   row.className = 's-row reveal' + (s.pha ? ' pha' : '');
   row.innerHTML = '<div class="who"><b>' + esc(s.name) + '</b><span>' + esc(s.sub) + '</span></div>' +
+    '<div class="sz num">' + n(s.sf) + '<small>sq ft</small></div>' +
     '<div class="track"><div class="fill" data-w="' + ((s.v - lo) / (hi - lo) * 100).toFixed(1) + '"></div></div>' +
     '<div class="v num">$' + s.v + '<small>/sf</small></div>';
   rowsEl.appendChild(row);
