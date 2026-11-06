@@ -250,7 +250,13 @@ section{padding:120px 0 132px;scroll-margin-top:64px}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
 /* head to head */
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:56px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);align-items:stretch;gap:22px;margin-top:56px}
+.face{position:relative}
+.flip-tag{position:absolute;top:30px;right:30px;z-index:2;display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;background:rgba(22,19,15,.8);color:#f5f0e8;font-size:12.5px;font-weight:600;letter-spacing:.02em;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 6px 18px rgba(14,11,8,.25);transition:background .2s,transform .2s var(--ease)}
+.flip-tag span{font-size:15px;line-height:1}
+.flip:hover .flip-tag{background:var(--gold-ink);transform:scale(1.04)}
+.face.back .flip-tag{background:rgba(245,240,232,.92);color:#16130f}
+.flip:hover .face.back .flip-tag{background:#e3c993}
 .face .edge-k{margin-top:22px;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:#e3c993}
 .face .edge{margin-top:8px;font-family:var(--display);font-size:22px;line-height:1.3;color:#f1ebe1}
 .face .edge b{font-weight:600;color:#e3c993}
@@ -259,6 +265,8 @@ section{padding:120px 0 132px;scroll-margin-top:64px}
 .ln.l7{background:#B933AD}.ln.lM,.ln.lF{background:#FF6319}.ln.lR,.ln.lN,.ln.lQ,.ln.lW{background:#FCCC0A;color:#111}
 .ln.lE,.ln.lA,.ln.lC{background:#0039A6}.ln.lJ,.ln.lZ{background:#996633}.ln.lG{background:#6CBE45}
 .lns{display:inline-flex;gap:4px}
+.edge .lns,.lede .lns{vertical-align:-3px;margin:0 1px}
+.edge .ln{width:22px;height:22px;font-size:12.5px}
 .detail .m.sub{align-items:center;gap:10px;margin-top:10px}
 .transit .stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:56px;border-top:1px solid var(--line-2);border-bottom:1px solid var(--line)}
 .tstat{padding:30px 28px 30px 0}
@@ -286,8 +294,8 @@ section{padding:120px 0 132px;scroll-margin-top:64px}
 .trow.pha .bar{background:var(--gold);opacity:1}
 .transit .fine{margin-top:20px;font-size:13px;color:var(--soft);max-width:80ch}
 
-.flip{perspective:1600px;text-align:left;display:block;width:100%}
-.flip-in{display:grid;transition:transform .8s var(--ease);transform-style:preserve-3d}
+.flip{perspective:1600px;text-align:left;display:flex;flex-direction:column;align-items:stretch;width:100%;height:100%}
+.flip-in{display:grid;flex:1 1 auto;grid-template-rows:1fr;transition:transform .8s var(--ease);transform-style:preserve-3d}
 .flip.flipped .flip-in{transform:rotateY(180deg)}
 .face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:var(--r-lg);padding:34px 34px 30px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;min-height:380px;transition:border-color .25s}
 .flip:hover .front{border-color:var(--line-2)}
@@ -493,7 +501,7 @@ footer .lic{font-style:italic}
   <section class="transit" id="transit">
     <div class="wrap">
       <h2 class="reveal">Five minutes to the train<br><em>Not twenty-five</em></h2>
-      <p class="lede reveal">Walking time from every home to its nearest subway station. Penthouse A is a short walk to the M and R at Woodhaven Boulevard. Most of the houses are closer to half an hour</p>
+      <p class="lede reveal">Walking time from every home to its nearest subway station. Penthouse A is a short walk to the <span class="lns"><span class="ln lM">M</span></span> and <span class="lns"><span class="ln lR">R</span></span> at Woodhaven Boulevard. Most of the houses are closer to half an hour</p>
       <div class="stats" id="tstats"></div>
       <div class="ttabs" id="ttabs" role="group" aria-label="Show"></div>
       <div class="trows" id="trows"></div>
@@ -525,7 +533,7 @@ footer .lic{font-style:italic}
   <section class="h2h">
     <div class="wrap">
       <h2 class="reveal">The three strongest <em>alternatives</em></h2>
-      <p class="lede reveal">Each one wins on something real. Turn the card to see why Penthouse A still comes out ahead</p>
+      <p class="lede reveal">Each one wins on something real. Tap a card to flip it and see why Penthouse A still comes out ahead</p>
       <div class="cards" id="cards"></div>
     </div>
   </section>
@@ -980,8 +988,8 @@ var H2H = [
   { id:'h1', name:'The garage house', gives:['A garage plus a driveway','A finished basement','No common charges'],
     pha:['A second full bath','An elevator','The roof, boiler and facade are the condo\'s job','A price $38K lower'] },
 ];
-H2H[0].edge = '<b>Peace and quiet.</b> The garage walk-up\'s balcony sits right above the rail tracks, and its subway is a 17-minute walk. Penthouse A has no tracks nearby and is 4-5 minutes from the M and R.';
-H2H[1].edge = '<b>Peace and quiet.</b> The parking two-bedroom faces Queens Boulevard traffic, and its train is a 12-minute walk. Penthouse A is a top floor on a side street, 4-5 minutes from the M and R.';
+H2H[0].edge = '<b>Peace and quiet.</b> The garage walk-up\'s balcony sits right above the rail tracks, and its subway is a 17-minute walk. Penthouse A has no tracks nearby and is 4-5 minutes from the ' + lines('M') + ' and ' + lines('R') + '.';
+H2H[1].edge = '<b>Peace and quiet.</b> The parking two-bedroom faces Queens Boulevard traffic, and its ' + lines('7') + ' is a 12-minute walk. Penthouse A is a top floor on a side street, 4-5 minutes from the ' + lines('M') + ' and ' + lines('R') + '.';
 H2H[2].edge = '<b>A house is not a condo.</b> At the garage house, the roof, boiler and facade are yours to fix, and the subway is a 26-minute walk. Penthouse A is 4-5 minutes away.';
 (function renderCards(){
   var html = '';
@@ -989,10 +997,10 @@ H2H[2].edge = '<b>A house is not a condo.</b> At the garage house, the roof, boi
     var h = HOMES.filter(function(x){ return x.id === c.id; })[0], a = addrOf(h), w = watchOf(h);
     html += '<button class="flip reveal" type="button" data-i="' + i + '" aria-pressed="false">' +
       '<div class="flip-in">' +
-        '<div class="face front">' + thumb(h, 'face-img') + '<div class="who">' + esc(meta(h)) + '</div><h3>' + esc(c.name) + '</h3>' +
+        '<div class="face front"><span class="flip-tag">Tap to flip <span aria-hidden="true">&#8635;</span></span>' + thumb(h, 'face-img') + '<div class="who">' + esc(meta(h)) + '</div><h3>' + esc(c.name) + '</h3>' +
           (a ? '<div class="ad">' + esc(a) + '</div>' : '') + '<div class="rt">' + lines(TR[h.id].l) + esc(TR[h.id].s) + ', ' + walkT(h.id) + ' walk</div><ul>' + li(c.gives) + '</ul>' +
           (w ? '<p class="catch">' + esc(w) + '</p>' : '') + '<div class="turn">What Penthouse A gives you instead <span class="arr" aria-hidden="true">&rarr;</span></div></div>' +
-        '<div class="face back">' + thumb(PHA, 'face-img') + '<div class="who">Penthouse A, $800K, 1,232 sf</div><h3>Why Penthouse A wins</h3>' +
+        '<div class="face back"><span class="flip-tag">Tap to flip back <span aria-hidden="true">&#8634;</span></span>' + thumb(PHA, 'face-img') + '<div class="who">Penthouse A, $800K, 1,232 sf</div><h3>Why Penthouse A wins</h3>' +
           '<div class="edge-k">The difference</div><p class="edge">' + c.edge + '</p><ul>' + li(c.pha) + '</ul>' +
           '<div class="turn"><span class="arr" aria-hidden="true">&larr;</span> Back to ' + esc(c.name.replace(/^The /,'the ')) + '</div></div>' +
       '</div></button>';
