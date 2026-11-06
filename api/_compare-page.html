@@ -479,7 +479,7 @@ footer .lic{font-style:italic}
 </nav>
 
 <main id="main">
-  <header class="hero">
+  <header class="hero" data-cmp="hero">
     <img src="/assets/skyline.jpg" alt="The Manhattan skyline seen over Queens rooftops from Penthouse A" fetchpriority="high">
     <p class="view-cap"><span class="vc-k">The view from Penthouse A</span><span class="vc-s">Midtown and Lower Manhattan, from the top floor</span></p>
     <div class="wrap">
@@ -503,7 +503,7 @@ footer .lic{font-style:italic}
     </div>
   </div>
 
-  <section class="funnel" id="field">
+  <section class="funnel" id="field" data-cmp="funnel">
     <div class="wrap">
       <h2 class="reveal">Thirty-three homes in<br><em>One comes out</em></h2>
       <p class="lede reveal">Every condo and house within about $100K of Penthouse A, filtered by what a buyer moving up actually needs. Tap any card to look back at that step</p>
@@ -521,7 +521,7 @@ footer .lic{font-style:italic}
     </div>
   </section>
 
-  <section class="chart-sec">
+  <section class="chart-sec" data-cmp="chart">
     <div class="wrap">
       <h2 class="reveal">Price per square foot can't show you <em>what's missing</em></h2>
       <p class="lede reveal">Every home by size and asking price. The dotted line marks Penthouse A's $649 per square foot. Tap anywhere near a home to compare it</p>
@@ -535,7 +535,7 @@ footer .lic{font-style:italic}
     </div>
   </section>
 
-  <section class="sales">
+  <section class="sales" data-cmp="sales">
     <div class="wrap">
       <h2 class="reveal">Priced below <em>its own building</em></h2>
       <p class="lede reveal">Recent closed sales in this building. Penthouse A is the largest of the three by more than 300 square feet, and it asks less per square foot than either</p>
@@ -544,7 +544,7 @@ footer .lic{font-style:italic}
     </div>
   </section>
 
-  <section class="transit" id="transit">
+  <section class="transit" id="transit" data-cmp="transit">
     <div class="wrap">
       <h2 class="reveal">Five minutes to the train<br><em>Not twenty-five</em></h2>
       <p class="lede reveal">Walking time from every home to its nearest subway station. Penthouse A is a short walk to the <span class="lns"><span class="ln lM">M</span></span> and <span class="lns"><span class="ln lR">R</span></span> at Woodhaven Boulevard. Most of the houses are closer to half an hour</p>
@@ -556,7 +556,7 @@ footer .lic{font-style:italic}
     </div>
   </section>
 
-  <section class="match" id="match">
+  <section class="match" id="match" data-cmp="match">
     <div class="wrap">
       <h2 class="reveal">Choose your <em>must-haves</em></h2>
       <p class="lede reveal">The field narrows as you choose. If Penthouse A isn't the right home for you, this will say so</p>
@@ -576,7 +576,7 @@ footer .lic{font-style:italic}
     </div>
   </section>
 
-  <section class="h2h">
+  <section class="h2h" data-cmp="alternatives">
     <div class="wrap">
       <h2 class="reveal">The three strongest <em>alternatives</em></h2>
       <p class="lede reveal">Each one wins on something real. Tap a card to flip it and see why Penthouse A still comes out ahead</p>
@@ -584,7 +584,7 @@ footer .lic{font-style:italic}
     </div>
   </section>
 
-  <section class="contact">
+  <section class="contact" data-cmp="contact">
     <div class="wrap">
       <img src="/assets/ian-headshot.jpg" alt="Ian Gong">
       <div>
@@ -592,8 +592,8 @@ footer .lic{font-style:italic}
         <p>Ian Gong, Casa Blanca. Listing agent for 87-14 57th Road, Penthouse A.</p>
       </div>
       <div class="ctas">
-        <a class="btn solid" href="tel:+19143318881">Call 914-331-8881</a>
-        <a class="btn line" href="mailto:i.gong@casa-blanca.com">i.gong@casa-blanca.com</a>
+        <a class="btn solid" href="tel:+19143318881" data-cmp-contact="call">Call 914-331-8881</a>
+        <a class="btn line" href="mailto:i.gong@casa-blanca.com" data-cmp-contact="email">i.gong@casa-blanca.com</a>
       </div>
     </div>
   </section>
@@ -1000,7 +1000,7 @@ renderMatch();
     var b = document.createElement('button'); b.type = 'button'; b.className = 'tg' + (x.k === tab ? ' on' : '');
     b.innerHTML = '<span class="box" aria-hidden="true"></span>' + x.t; b.setAttribute('aria-pressed', x.k === tab ? 'true' : 'false');
     b.addEventListener('click', function(){
-      tab = x.k; all = false;
+      tab = x.k; all = false; track('compare_transit', x.k);
       $('ttabs').querySelectorAll('.tg').forEach(function(e){ e.classList.toggle('on', e === b); e.setAttribute('aria-pressed', e === b ? 'true' : 'false'); });
       draw();
     });
@@ -1061,6 +1061,20 @@ H2H[2].edge = '<b>A house is not a condo.</b> At the garage house, the roof, boi
       if(on) track('compare_flip', H2H[+b.dataset.i].id);
     });
   });
+})();
+
+/* ---------------- activity: which sections each visitor reaches (once each), contact taps ---------------- */
+(function(){
+  document.querySelectorAll('[data-cmp-contact]').forEach(function(a){ a.addEventListener('click', function(){ track('compare_contact', a.getAttribute('data-cmp-contact')); }); });
+  if(!('IntersectionObserver' in window)) return;
+  var seen = {};
+  var so = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      var k = en.target.getAttribute('data-cmp');
+      if(en.isIntersecting && !seen[k]){ seen[k] = 1; track('compare_section', k); so.unobserve(en.target); }
+    });
+  }, { threshold: .35 });
+  document.querySelectorAll('[data-cmp]').forEach(function(el){ so.observe(el); });
 })();
 
 /* ---------------- reveal on scroll ---------------- */

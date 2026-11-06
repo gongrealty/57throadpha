@@ -1,6 +1,7 @@
 // GET /api/admin/data — aggregated dashboard data (requires admin session)
 //   By default, bots/crawlers are filtered out. Add ?bots=1 to include them.
 const { sbSelectAll, sbCount, isAdmin } = require('../_lib');
+const COMPARE_HOMES = require('../_compare-private');   // home id -> street address, for the /compare panel
 
 // Detailed analytics run over the most recent slice of history so the dashboard stays fast
 // no matter how large the events table grows. Lifetime totals come from cheap count queries.
@@ -70,8 +71,8 @@ module.exports = async (req, res) => {
   let allEvents, leadsRaw, lifetime = {};
   try {
     // newest-first and capped, so query cost stays flat as the table grows.
-    // Only the columns the dashboard actually renders (t/path/ref are unused).
-    allEvents = await sbSelectAll('pha_events', 'select=ts,ip,ua,vid,event,section&order=id.desc', 1000, MAX_EVENTS);
+    // Only the columns the dashboard actually renders (path feeds the site map).
+    allEvents = await sbSelectAll('pha_events', 'select=ts,ip,ua,vid,event,section,path&order=id.desc', 1000, MAX_EVENTS);
     leadsRaw  = await sbSelectAll('pha_leads',  'select=id,ts,ip,ua,vid,type,fields&order=id.desc', 1000, 5000);
   } catch(e){
     res.status(500).json({ ok:false, error:'database' }); return;
@@ -186,8 +187,80 @@ module.exports = async (req, res) => {
   const selfPageviews  = visitorEvents.filter(e => e.event === 'pageview' && isOwnEvent(e)).length;
   const selfIpCount    = ownerIps.size;
 
+  // ---- site map: every page on the site with its traffic (respects the bot / self filters) ----
+  function normPath(p){
+    p = String(p || '/').split('?')[0].replace(/\/index(\.html)?$/, '/').replace(/\.html$/, '');
+    if(p.length > 1) p = p.replace(/\/+$/, '');
+    return p || '/';
+  }
+  const PAGES = [
+    { path:'/',        name:'Listing page',               note:'The public listing for Penthouse A' },
+    { path:'/peter',   name:'Listing mirror (old link)',  note:'Same page as the listing, kept for the first link Ian shared' },
+    { path:'/compare', name:'Buyer comparison',           note:'Private. Agent name + password' },
+    { path:'/admin',   name:'This dashboard',             note:'Admin only' }
+  ];
+  const pageStats = {};
+  events.forEach(e => {
+    const k = normPath(e.path);
+    if(!pageStats[k]) pageStats[k] = { views:0, people:new Set(), last:null, first:null };
+    const g = pageStats[k];
+    if(e.event === 'pageview'){ g.views++; g.people.add(e.ip || e.vid); }
+    if(!g.last || e.ts > g.last) g.last = e.ts;
+    if(!g.first || e.ts < g.first) g.first = e.ts;
+  });
+  const adminLogins = allEvents.filter(e => e.event === 'admin_login_ok').length;
+  const sitemap = PAGES.map(pg => {
+    const g = pageStats[pg.path] || { views:0, people:new Set(), last:null };
+    return { path:pg.path, name:pg.name, note:pg.note, views:g.views, people:g.people.size, last:g.last,
+             logins: pg.path === '/admin' ? adminLogins : undefined };
+  });
+  Object.keys(pageStats).forEach(k => {          // anything else visitors reached (old links, typos)
+    if(PAGES.some(pg => pg.path === k) || k.indexOf('/api') === 0 || k === '/robots.txt' || k === '/sitemap.xml') return;
+    const g = pageStats[k];
+    if(g.views) sitemap.push({ path:k, name:'Other page', note:'Not part of the site plan', views:g.views, people:g.people.size, last:g.last });
+  });
+
+  // ---- buyer comparison (/compare) activity ----
+  const homeName = id => id === 'pha' ? 'Penthouse A' : ((COMPARE_HOMES[id] && COMPARE_HOMES[id].addr) || id);
+  const CMP_SECTIONS = { hero:'Top of page', funnel:'33 homes in, one out', chart:'Price per sq ft chart', sales:'Building sales',
+                         transit:'Walk to the subway', match:'Must-haves', alternatives:'Strongest alternatives', contact:'See it in person' };
+  const CHIP_NAMES = { br3:'3 bedrooms', fb2:'2 full baths', sf:'1,200+ sq ft', out:'Outdoor space', ter:'Skyline terrace', elev:'Elevator',
+                       condo:'Condo', park:'Parking', wd:'In-unit laundry', sub:'Subway under 10 min' };
+  const cmpEvents = events.filter(e => normPath(e.path) === '/compare' || /^compare_/.test(e.event || ''));
+  const tally = (list, keyFn) => { const o = {}; list.forEach(e => { const k = keyFn(e); if(k != null) o[k] = (o[k] || 0) + 1; }); return o; };
+  const toRows = (o, nameFn) => Object.keys(o).map(k => ({ key:k, name:nameFn(k), count:o[k] })).sort((a, b) => b.count - a.count);
+  // sign-ins are always listed (failed attempts matter even from your own network); `own` marks yours
+  const signins = allEvents.filter(e => e.event === 'compare_signin' || e.event === 'compare_signin_fail').slice(0, 200)
+    .map(e => ({ ts:e.ts, ip:e.ip, agent:e.section || '', ok:e.event === 'compare_signin', own: ownerIps.has(e.ip) }));
+  const cmpViews = cmpEvents.filter(e => e.event === 'pageview');
+  const compare = {
+    pageviews: cmpViews.length,
+    people: new Set(cmpViews.map(e => e.ip || e.vid)).size,
+    signinsOk: signins.filter(s => s.ok).length,
+    signinsFail: signins.filter(s => !s.ok).length,
+    agents: Array.from(new Set(signins.filter(s => s.ok).map(s => s.agent.trim().toLowerCase()))).filter(Boolean).length,
+    signins,
+    sections: (t => Object.keys(CMP_SECTIONS).map(k => ({ key:k, name:CMP_SECTIONS[k], count:t[k] || 0 })))(tally(cmpEvents.filter(e => e.event === 'compare_section'), e => e.section)),   // page order, top to bottom
+    homes: toRows(tally(cmpEvents.filter(e => e.event === 'compare_chart' || e.event === 'compare_flip'), e => e.section), homeName).slice(0, 12),
+    chips: toRows(tally(cmpEvents.filter(e => e.event === 'compare_chip'), e => e.section), k => CHIP_NAMES[k] || k),
+    actions: {
+      filters: cmpEvents.filter(e => e.event === 'compare_filter').length,
+      chart:   cmpEvents.filter(e => e.event === 'compare_chart').length,
+      chips:   cmpEvents.filter(e => e.event === 'compare_chip').length,
+      flips:   cmpEvents.filter(e => e.event === 'compare_flip').length,
+      subway:  cmpEvents.filter(e => e.event === 'compare_transit').length,
+      calls:   cmpEvents.filter(e => e.event === 'compare_contact').length
+    },
+    recent: cmpEvents.slice(0, 300).map(e => ({ ts:e.ts, ip:e.ip, event:e.event, section:e.section,
+      label: (e.event === 'compare_chart' || e.event === 'compare_flip') ? homeName(e.section)
+           : e.event === 'compare_chip' ? (CHIP_NAMES[e.section] || e.section)
+           : e.event === 'compare_section' ? (CMP_SECTIONS[e.section] || e.section) : (e.section || '') }))
+  };
+
   res.status(200).json({
     ok:true,
+    sitemap,
+    compare,
     geo,
     botsIncluded: includeBots,
     selfIncluded: includeSelf,

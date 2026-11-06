@@ -114,6 +114,43 @@
   .pills{display:flex;flex-wrap:wrap;gap:5px}
   .pill{font-size:10px;background:#f1ece2;border:1px solid var(--line);border-radius:20px;padding:2px 9px;text-transform:capitalize;color:#5a5248}
   .muted{color:var(--muted)}
+  .fold-btn{font:inherit;font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;margin-bottom:16px}
+  .fold-btn:hover{border-color:var(--gold)}
+  #livePanel.folded .livechart-wrap{display:none}
+  .sm-list{display:grid;gap:0}
+  .sm-row{display:grid;grid-template-columns:22px minmax(0,1fr) 90px 90px 150px;gap:14px;align-items:center;padding:12px 4px;border-bottom:1px solid #f0ece4;font-size:13px}
+  .sm-row:last-child{border-bottom:0}
+  .sm-row.head{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding-top:0}
+  .sm-tree{color:var(--gold);font-size:14px}
+  .sm-name b{display:block;font-size:13.5px}
+  .sm-name a{color:var(--ink);text-decoration:none}
+  .sm-name a:hover{text-decoration:underline}
+  .sm-name > span{display:block;font-size:12px;color:var(--muted)}
+  .sm-path{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;color:var(--muted);margin-left:6px}
+  .sm-n{font-variant-numeric:tabular-nums;font-weight:600}
+  .sm-lock{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7d6232;background:rgba(180,138,63,.14);padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:1px}
+  .cmp-open{font-size:12px;font-weight:600;color:#7d6232;text-decoration:none}
+  .cmp-stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px}
+  .cmp-stat{background:var(--paper);border-radius:8px;padding:12px 14px}
+  .cmp-stat .n{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  .cmp-stat .t{font-size:11px;color:var(--muted);margin-top:2px}
+  .cmp-stat.bad .n{color:#b4412f}
+  .cmp-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}
+  .cmp-h{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-weight:600}
+  .cmp-bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;font-size:12.5px;padding:5px 0}
+  .cmp-bar .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cmp-bar .ct{font-weight:700;font-variant-numeric:tabular-nums}
+  .cmp-bar .tr{grid-column:1/-1;height:3px;border-radius:3px;background:#f0ece4;overflow:hidden}
+  .cmp-bar .tr i{display:block;height:100%;background:var(--gold);border-radius:3px}
+  .cmp-si{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;font-size:12.5px;padding:7px 0;border-bottom:1px solid #f0ece4}
+  .cmp-si:last-child{border-bottom:0}
+  .cmp-si .ok{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#e3f1e6;color:#2f6b3d;align-self:start;margin-top:1px}
+  .cmp-si .no{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#f7e3df;color:#9c3a2a;align-self:start;margin-top:1px}
+  .cmp-si b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cmp-si .when{grid-column:2;color:var(--muted);font-size:11.5px}
+  .cmp-empty{font-size:12.5px;color:var(--muted)}
+  @media (max-width:900px){ .cmp-stats{grid-template-columns:repeat(3,1fr)} .cmp-grid{grid-template-columns:1fr 1fr} .sm-row{grid-template-columns:18px minmax(0,1fr) 60px 70px} .sm-row .sm-last{display:none} }
+  @media (max-width:560px){ .cmp-grid{grid-template-columns:1fr} }
   .scroll{overflow-x:auto}
   .empty{color:var(--muted);font-size:13px;padding:8px 2px}
   details.lead{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px}
@@ -210,7 +247,10 @@
     <div class="bot-note" id="botNote"></div>
 
     <div class="panel" id="livePanel" hidden>
-      <h2>Inside right now</h2>
+      <div class="panel-head">
+        <h2>Inside right now</h2>
+        <button class="fold-btn" id="liveFold" type="button" aria-expanded="true" aria-controls="liveChart">Hide graph</button>
+      </div>
       <div class="rows" id="liveRows"></div>
       <div class="livechart-wrap" id="liveChart"></div>
       <div class="live-foot">
@@ -237,6 +277,31 @@
         </div>
       </div>
       <div id="traffic"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Site map</h2>
+        <span class="muted" style="font-size:12px">Every page on 57throadpha.com and who reached it</span>
+      </div>
+      <div id="sitemap"></div>
+    </div>
+
+    <div class="panel" id="cmpPanel">
+      <div class="panel-head">
+        <h2>Buyer comparison &middot; /compare</h2>
+        <a class="cmp-open" href="/compare" target="_blank" rel="noopener">Open the page &rarr;</a>
+      </div>
+      <div class="cmp-stats" id="cmpStats"></div>
+      <div class="cmp-grid">
+        <div><div class="cmp-h">Sign-ins</div><div id="cmpSignins"></div></div>
+        <div><div class="cmp-h">How far people got</div><div id="cmpSections"></div></div>
+        <div><div class="cmp-h">Homes they looked at</div><div id="cmpHomes"></div></div>
+        <div><div class="cmp-h">Must-haves they picked</div><div id="cmpChips"></div></div>
+      </div>
+      <div class="cmp-h" style="margin-top:22px">Recent activity on this page</div>
+      <div class="scroll"><table><thead><tr><th>When</th><th>Visitor</th><th>What</th><th>Detail</th></tr></thead><tbody id="cmpRecent"></tbody></table></div>
+      <div class="pager" id="cmpRecentPager"></div>
     </div>
 
     <div class="panel">
@@ -838,6 +903,10 @@
     trafficTimes = d.pageviewTimes || [];
     renderTraffic();
 
+    // site map + buyer comparison
+    renderSitemap(d.sitemap || []);
+    renderCompare(d.compare || null);
+
     // visitor heat map
     renderMap(d.geoPoints || []);
 
@@ -866,6 +935,72 @@
         '</td><td>'+esc(e.section||'—')+'</td></tr>';
     }, 4, 'No activity yet.');
   }
+
+  var CMP_EVENT = { pageview:'Opened the page', compare_section:'Reached a section', compare_chart:'Tapped a home on the chart',
+    compare_flip:'Flipped an alternative card', compare_chip:'Toggled a must-have', compare_filter:'Tapped a funnel step',
+    compare_transit:'Changed the subway list', compare_contact:'Tapped Call or Email', compare_signin:'Signed in', compare_signin_fail:'Failed sign-in' };
+  function renderSitemap(rows){
+    var max = Math.max.apply(null, rows.map(function(r){ return r.views; }).concat([1]));
+    var html = '<div class="sm-list"><div class="sm-row head"><span></span><span>Page</span><span>Views</span><span>People</span><span class="sm-last">Last visit</span></div>';
+    rows.forEach(function(r, i){
+      var child = r.path === '/peter' || r.path === '/compare';
+      html += '<div class="sm-row"><span class="sm-tree">' + (i === 0 ? '&#9679;' : child ? '&#8627;' : r.path === '/admin' ? '&#9675;' : '&middot;') + '</span>' +
+        '<span class="sm-name"><b><a href="' + esc(r.path) + '" target="_blank" rel="noopener">' + esc(r.name) + '</a><span class="sm-path" style="display:inline">' + esc(r.path) + '</span>' +
+        (r.path === '/compare' ? '<span class="sm-lock">Password</span>' : '') + '</b><span>' + esc(r.note || '') + '</span></span>' +
+        '<span class="sm-n">' + (r.path === '/admin' ? (r.logins || 0) + ' <span class="muted" style="font-weight:400">' + (r.logins === 1 ? 'sign-in' : 'sign-ins') + '</span>' : r.views) + '</span>' +
+        '<span class="sm-n">' + (r.path === '/admin' ? '--' : r.people) + '</span>' +
+        '<span class="muted sm-last">' + (r.last ? fmt(r.last) : '--') + '</span></div>';
+    });
+    document.getElementById('sitemap').innerHTML = html + '</div>';
+  }
+  function barList(id, rows, empty){
+    var el = document.getElementById(id);
+    if(!rows || !rows.length){ el.innerHTML = '<div class="cmp-empty">' + empty + '</div>'; return; }
+    var max = Math.max.apply(null, rows.map(function(r){ return r.count; }));
+    el.innerHTML = rows.slice(0, 10).map(function(r){
+      return '<div class="cmp-bar"><span class="nm" title="' + esc(r.name) + '">' + esc(r.name) + '</span><span class="ct">' + r.count + '</span>' +
+        '<span class="tr"><i style="width:' + Math.round(r.count / max * 100) + '%"></i></span></div>';
+    }).join('');
+  }
+  function renderCompare(c){
+    if(!c) return;
+    var a = c.actions || {};
+    var stats = [
+      [c.pageviews, 'Page views'], [c.people, 'People'], [c.signinsOk, 'Sign-ins'],
+      [c.signinsFail, 'Failed sign-ins', c.signinsFail > 0], [a.chart + a.flips, 'Homes compared'], [a.calls, 'Call / email taps']
+    ];
+    document.getElementById('cmpStats').innerHTML = stats.map(function(x){
+      return '<div class="cmp-stat' + (x[2] ? ' bad' : '') + '"><div class="n">' + (x[0] || 0) + '</div><div class="t">' + x[1] + '</div></div>';
+    }).join('');
+    var si = document.getElementById('cmpSignins');
+    si.innerHTML = c.signins && c.signins.length ? c.signins.slice(0, 8).map(function(s){
+      return '<div class="cmp-si"><span class="' + (s.ok ? 'ok' : 'no') + '">' + (s.ok ? 'IN' : 'FAILED') + '</span><b title="' + esc(s.agent) + '">' + esc(s.agent || '(no name)') +
+        (s.own ? ' <span class="muted" style="font-weight:400">(you)</span>' : '') + '</b><span class="when">' + fmt(s.ts) + ' &middot; ' + esc(s.ip || '') + '</span></div>';
+    }).join('') : '<div class="cmp-empty">No sign-ins yet. Each attempt shows here with the agent name typed.</div>';
+    barList('cmpSections', c.sections, 'No section views yet.');
+    barList('cmpHomes', c.homes, 'No homes compared yet.');
+    barList('cmpChips', c.chips, 'No must-haves picked yet.');
+    paginate('cmpRecent', 'cmpRecentPager', c.recent || [], function(e){
+      return '<tr><td class="muted">' + fmt(e.ts) + '</td><td>' + ipCell(e.ip) + '</td><td>' + esc(CMP_EVENT[e.event] || e.event) +
+        '</td><td>' + esc(e.label || '--') + '</td></tr>';
+    }, 4, 'No activity on the comparison page yet.');
+  }
+  // temperature graph: collapsible, remembers your choice on this computer
+  (function(){
+    var btn = document.getElementById('liveFold'), panel = document.getElementById('livePanel');
+    if(!btn || !panel) return;
+    function set(folded){
+      panel.classList.toggle('folded', folded);
+      btn.textContent = folded ? 'Show graph' : 'Hide graph';
+      btn.setAttribute('aria-expanded', folded ? 'false' : 'true');
+    }
+    var start = false; try { start = localStorage.getItem('pha_live_folded') === '1'; } catch(e){}
+    set(start);
+    btn.addEventListener('click', function(){
+      var f = !panel.classList.contains('folded'); set(f);
+      try { localStorage.setItem('pha_live_folded', f ? '1' : '0'); } catch(e){}
+    });
+  })();
 
   // if already logged in (token present), skip straight to the dashboard
   fetch('/api/admin/data', {credentials:'include', headers: authHeaders()}).then(function(r){ if(r.ok){ show(); return r.json(); } return null; })
