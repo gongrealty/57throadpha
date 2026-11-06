@@ -7,7 +7,7 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const { parseCookies } = require('./_lib');
+const { parseCookies, sbInsert, clientIp } = require('./_lib');
 const PRIVATE = require('./_compare-private');
 
 const COOKIE = 'pha_cmp';
@@ -54,8 +54,10 @@ function send(res, status, html){
 }
 function redirect(res){ res.statusCode = 303; res.setHeader('Location', '/compare'); res.end(); }
 
-function signInPage(error){
+function attr(v){ return String(v || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function signInPage(error, name){
   const msg = error === 'wrong' ? 'That password didn\'t work. Check with Ian.'
+            : error === 'name'  ? 'Please enter your name.'
             : error === 'off'   ? 'This report isn\'t open yet. Ask Ian for access.' : '';
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow"><title>Buyer Comparison | 87-14 57th Road PHA</title>
@@ -81,13 +83,23 @@ button:active{transform:scale(.98)}
 <form class="card" method="post" action="/compare">
   <div class="k">87-14 57th Road, Penthouse A</div>
   <h1>Buyer comparison</h1>
-  <p>A private report Ian Gong shares with buyers and their agents. Enter the password he gave you.</p>
+  <p>A private report Ian Gong shares with buyers and their agents. Enter your name and the password he gave you.</p>
+  <label for="agent">Agent name</label>
+  <input id="agent" name="agent" type="text" autocomplete="username" autocapitalize="words" maxlength="80" required value="${attr(name)}"${name ? '' : ' autofocus'}>
   <label for="pw">Password</label>
-  <input id="pw" name="password" type="password" autocomplete="current-password" required autofocus>
+  <input id="pw" name="password" type="password" autocomplete="current-password" required${name ? ' autofocus' : ''}>
   <div class="err" role="alert">${msg}</div>
   <button type="submit">Open the report</button>
   <div class="foot">Need access? <a href="tel:+19143318881">914-331-8881</a> or <a href="mailto:i.gong@casa-blanca.com">i.gong@casa-blanca.com</a></div>
 </form></body></html>`;
+}
+
+// who signed in shows up in the /admin activity feed (event compare_signin / compare_signin_fail)
+async function logSignIn(req, agent, ok){
+  try {
+    await sbInsert('pha_events', { ip: clientIp(req), ua: String(req.headers['user-agent'] || '').slice(0,300),
+      vid: 'compare', event: ok ? 'compare_signin' : 'compare_signin_fail', section: agent.slice(0,40), t: 0, path: '/compare', ref: null });
+  } catch(e){ /* never block sign-in over logging */ }
 }
 
 module.exports = async (req, res) => {
@@ -98,10 +110,14 @@ module.exports = async (req, res) => {
     const body = await readForm(req);
     if(body.action === 'lock'){ setCookie(res, '', 0); redirect(res); return; }
     if(!pw()){ send(res, 503, signInPage('off')); return; }
+    const agent = String(body.agent || '').trim().slice(0, 80);
     const given = String(body.password || '').trim();
-    if(given && sameSecret(given, pw())){ setCookie(res, makeToken(), DAYS * 86400); redirect(res); return; }
+    if(!agent){ send(res, 400, signInPage('name')); return; }
+    const ok = !!given && sameSecret(given, pw());
+    await logSignIn(req, agent, ok);
+    if(ok){ setCookie(res, makeToken(), DAYS * 86400); redirect(res); return; }
     await new Promise(r => setTimeout(r, 600));   // slow down guessing
-    send(res, 401, signInPage('wrong'));
+    send(res, 401, signInPage('wrong', agent));
     return;
   }
   if(req.method !== 'GET' && req.method !== 'HEAD'){ res.statusCode = 405; res.end(); return; }
