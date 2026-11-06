@@ -210,10 +210,28 @@ section{padding:120px 0 132px;scroll-margin-top:64px}
 .tg.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .tg.on .box{background:var(--gold);border-color:var(--gold)}
 .tg.on .box:after{opacity:1}
-.budget{display:flex;align-items:center;gap:20px;margin-top:28px;flex-wrap:wrap}
-.budget label{font-size:14px;font-weight:600}
-.budget input{width:min(380px,100%);accent-color:var(--gold)}
-.budget output{font-family:var(--display);font-size:26px;font-weight:500;min-width:80px}
+.toggles{gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:2px 2px 6px;margin-left:-2px;margin-right:-2px}
+.toggles::-webkit-scrollbar{display:none}
+.toggles .tg{flex:0 0 auto;gap:7px;padding:8px 13px 8px 10px;font-size:13px;border-radius:999px;white-space:nowrap;background:var(--card)}
+.toggles .tg .box{width:14px;height:14px;border-radius:50%}
+.toggles .tg.on{background:var(--ink)}
+.budget{display:grid;grid-template-columns:max-content minmax(260px,560px);justify-content:start;align-items:end;gap:28px;margin-top:34px}
+.budget label{padding-bottom:22px}
+.rng{position:relative;padding-top:46px;--p:1}
+.rng input{-webkit-appearance:none;appearance:none;width:100%;height:22px;margin:0;background:transparent;cursor:pointer;display:block}
+.rng input:focus{outline:none}
+.rng input::-webkit-slider-runnable-track{height:3px;border-radius:3px;background:linear-gradient(90deg,var(--gold) 0,var(--gold) calc(var(--p) * 100%),var(--line-2) calc(var(--p) * 100%))}
+.rng input::-moz-range-track{height:3px;border-radius:3px;background:var(--line-2)}
+.rng input::-moz-range-progress{height:3px;border-radius:3px;background:var(--gold)}
+.rng input::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-9.5px;border-radius:50%;background:var(--ink);border:4px solid var(--paper-2);box-shadow:0 0 0 1.5px var(--gold),0 6px 16px rgba(60,44,20,.28);transition:transform .2s var(--ease)}
+.rng input::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--ink);border:4px solid var(--paper-2);box-shadow:0 0 0 1.5px var(--gold),0 6px 16px rgba(60,44,20,.28)}
+.rng input:active::-webkit-slider-thumb,.rng input:focus-visible::-webkit-slider-thumb{transform:scale(1.14)}
+.rng input:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 1.5px var(--gold),0 0 0 6px var(--gold-wash)}
+.bub{position:absolute;top:0;left:calc(var(--p) * (100% - 22px) + 11px);transform:translateX(calc(var(--p) * -100%));padding:5px 12px 4px;border-radius:var(--r);background:var(--ink);color:var(--paper);font-family:var(--display);font-size:21px;font-weight:600;line-height:1.1;white-space:nowrap;pointer-events:none;transition:background .2s}
+.bub:after{content:"";position:absolute;left:clamp(10px, calc(var(--p) * 100%), calc(100% - 10px));bottom:-5px;width:10px;height:10px;background:inherit;transform:translateX(-50%) rotate(45deg);border-radius:1px}
+.bub.below{background:var(--gold-ink)}
+.ends{display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--soft)}
+.budget label{font-size:14px;font-weight:600;white-space:nowrap}
 .r-head{margin-top:56px;padding-bottom:20px;border-bottom:1px solid var(--line-2)}
 .r-head h3{font-size:36px;line-height:1.05}
 .honest{margin-top:20px;font-family:var(--display);font-style:italic;font-size:21px;line-height:1.4;color:var(--ink-2);max-width:62ch}
@@ -225,10 +243,49 @@ section{padding:120px 0 132px;scroll-margin-top:64px}
 .res .tw{font-size:13px;color:var(--ink-2);font-style:italic;margin-top:4px}
 .res.pha .tt{color:var(--gold-ink)}
 .more{margin-top:32px}
+.res-img,.face-img{display:block;aspect-ratio:3/2;overflow:hidden;background:var(--line);border-radius:var(--r)}
+.res-img{margin-bottom:12px}
+.face-img{margin:-10px -10px 22px;border-radius:var(--r)}
+.res-img img,.face-img img{width:100%;height:100%;object-fit:cover;display:block}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
 /* head to head */
-.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-top:56px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:56px}
+.face .edge-k{margin-top:22px;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:#e3c993}
+.face .edge{margin-top:8px;font-family:var(--display);font-size:22px;line-height:1.3;color:#f1ebe1}
+.face .edge b{font-weight:600;color:#e3c993}
+.face .rt{margin-top:12px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.ln{display:inline-grid;place-items:center;width:21px;height:21px;border-radius:50%;font:700 12px/1 "Helvetica Neue",Helvetica,Arial,sans-serif;color:#fff;flex-shrink:0;letter-spacing:0}
+.ln.l7{background:#B933AD}.ln.lM,.ln.lF{background:#FF6319}.ln.lR,.ln.lN,.ln.lQ,.ln.lW{background:#FCCC0A;color:#111}
+.ln.lE,.ln.lA,.ln.lC{background:#0039A6}.ln.lJ,.ln.lZ{background:#996633}.ln.lG{background:#6CBE45}
+.lns{display:inline-flex;gap:4px}
+.detail .m.sub{align-items:center;gap:10px;margin-top:10px}
+.transit .stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:56px;border-top:1px solid var(--line-2);border-bottom:1px solid var(--line)}
+.tstat{padding:30px 28px 30px 0}
+.tstat + .tstat{padding-left:28px;border-left:1px solid var(--line)}
+.tstat b{display:block;font-family:var(--display);font-weight:500;font-size:clamp(48px,5.4vw,72px);line-height:.95;letter-spacing:-.02em}
+.tstat b small{font-size:.42em;letter-spacing:0;margin-left:4px;color:var(--muted);font-weight:500}
+.tstat.pha b{color:var(--gold-ink)}
+.tstat > span{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;color:var(--muted)}
+.tstat em{display:block;font-style:normal;font-size:13px;color:var(--soft);margin-top:4px}
+.ttabs{display:flex;gap:8px;margin-top:40px;flex-wrap:wrap}
+.trows{margin-top:18px;border-top:1px solid var(--line)}
+.trow{display:grid;grid-template-columns:34px minmax(200px,1.3fr) minmax(220px,1.2fr) 1fr 92px;gap:20px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);animation:rise .45s var(--ease) both}
+.trow .rk{font-family:var(--display);font-size:20px;color:var(--soft)}
+.trow .who{min-width:0}
+.trow .who b{display:block;font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trow .who span{display:block;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trow .st{display:flex;align-items:center;gap:10px;min-width:0;font-size:14px}
+.trow .st .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trow .bar{display:block;height:2px;background:var(--dot);opacity:.55;border-radius:2px;position:relative}
+.trow .bar:after{content:"";position:absolute;right:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:inherit}
+.trow .tm{font-family:var(--display);font-size:24px;font-weight:500;text-align:right;line-height:1;white-space:nowrap}
+.trow .tm small{font-family:var(--sans);font-size:11.5px;color:var(--muted);margin-left:3px}
+.trow.pha{background:linear-gradient(90deg,var(--gold-wash),transparent 85%)}
+.trow.pha .who b,.trow.pha .tm,.trow.pha .rk{color:var(--gold-ink)}
+.trow.pha .bar{background:var(--gold);opacity:1}
+.transit .fine{margin-top:20px;font-size:13px;color:var(--soft);max-width:80ch}
+
 .flip{perspective:1600px;text-align:left;display:block;width:100%}
 .flip-in{display:grid;transition:transform .8s var(--ease);transform-style:preserve-3d}
 .flip.flipped .flip-in{transform:rotateY(180deg)}
@@ -272,6 +329,8 @@ footer .lic{font-style:italic}
   .detail{position:static;min-height:0}
   .results{grid-template-columns:1fr 1fr}
   .cards{grid-template-columns:1fr}
+  .trow{grid-template-columns:28px 1fr 1fr 80px}
+  .trow .barw{display:none}
   .facts .wrap{grid-template-columns:repeat(3,1fr)}
   .fact:nth-child(4){border-left:0;padding-left:0}
   .fact:nth-child(n+4){border-top:1px solid var(--line)}
@@ -311,6 +370,14 @@ footer .lic{font-style:italic}
   .s-row .sz small{font-size:10px}
   .s-row .v{font-size:26px}
   .vs{grid-template-columns:1fr}
+  .budget{grid-template-columns:1fr;gap:6px}
+  .budget label{padding-bottom:0}
+  .transit .stats{grid-template-columns:1fr}
+  .tstat{padding:22px 0}
+  .tstat + .tstat{padding-left:0;border-left:0;border-top:1px solid var(--line)}
+  .trow{grid-template-columns:24px 1fr 64px;gap:4px 12px}
+  .trow .st{grid-column:2/3;grid-row:2;font-size:13px}
+  .trow .tm{grid-row:1/3;grid-column:3}
   .vs > div:first-child{padding-right:0}
   .vs > div + div{padding-left:0;border-left:0;border-top:1px solid var(--line);margin-top:20px}
   .face{padding:26px 22px;min-height:360px}
@@ -363,8 +430,8 @@ footer .lic{font-style:italic}
     <p class="view-cap"><span class="vc-k">The view from Penthouse A</span><span class="vc-s">Midtown and Lower Manhattan, from the top floor</span></p>
     <div class="wrap">
       <div class="label">A private buyer comparison<span class="hide-sm">, November 2026</span></div>
-      <h1>What $800K buys in Western Queens, <em>and what it doesn't.</em></h1>
-      <p>Penthouse A against 32 homes asking $570K to $898K. Only one combines all of it.</p>
+      <h1>What $800K buys in Western Queens, <em>and what it doesn't</em></h1>
+      <p>Penthouse A against 32 homes asking $570K to $898K<br>Only one combines all of it</p>
       <div class="ctas">
         <a class="btn solid" href="#field">See the field <span class="arr" aria-hidden="true">&rarr;</span></a>
         <a class="btn line" href="#match">Find your match</a>
@@ -384,8 +451,8 @@ footer .lic{font-style:italic}
 
   <section class="funnel" id="field">
     <div class="wrap">
-      <h2 class="reveal">Thirty-three homes in. <em>One comes out.</em></h2>
-      <p class="lede reveal">Every condo and house within about $100K of Penthouse A, filtered by what a buyer moving up actually needs. Tap any card to look back at that step.</p>
+      <h2 class="reveal">Thirty-three homes in<br><em>One comes out</em></h2>
+      <p class="lede reveal">Every condo and house within about $100K of Penthouse A, filtered by what a buyer moving up actually needs. Tap any card to look back at that step</p>
       <div class="grid">
         <div class="feed-col">
           <ol class="feed" id="feed" aria-live="polite" aria-label="Filters applied, newest first"></ol>
@@ -402,8 +469,8 @@ footer .lic{font-style:italic}
 
   <section class="chart-sec">
     <div class="wrap">
-      <h2 class="reveal">Price per square foot can't show you <em>what's missing.</em></h2>
-      <p class="lede reveal">Every home by size and asking price. The dotted line marks Penthouse A's $649 per square foot. Tap anywhere near a home to compare it.</p>
+      <h2 class="reveal">Price per square foot can't show you <em>what's missing</em></h2>
+      <p class="lede reveal">Every home by size and asking price. The dotted line marks Penthouse A's $649 per square foot. Tap anywhere near a home to compare it</p>
       <div class="chart-grid">
         <div class="plot reveal">
           <svg id="scatter" viewBox="0 0 680 460" aria-label="Asking price against square feet for every home in the comparison"></svg>
@@ -416,22 +483,37 @@ footer .lic{font-style:italic}
 
   <section class="sales">
     <div class="wrap">
-      <h2 class="reveal">Priced below <em>its own building.</em></h2>
-      <p class="lede reveal">Recent closed sales in this building. Penthouse A is the largest of the three by more than 300 square feet, and it asks less per square foot than either.</p>
+      <h2 class="reveal">Priced below <em>its own building</em></h2>
+      <p class="lede reveal">Recent closed sales in this building. Penthouse A is the largest of the three by more than 300 square feet, and it asks less per square foot than either</p>
       <div class="rows" id="rows"></div>
       <p class="fine">Closed sales are public record. Smaller apartments usually sell for more per square foot, so treat this as a reference point, not an appraisal.</p>
     </div>
   </section>
 
+  <section class="transit" id="transit">
+    <div class="wrap">
+      <h2 class="reveal">Five minutes to the train<br><em>Not twenty-five</em></h2>
+      <p class="lede reveal">Walking time from every home to its nearest subway station. Penthouse A is a short walk to the M and R at Woodhaven Boulevard. Most of the houses are closer to half an hour</p>
+      <div class="stats" id="tstats"></div>
+      <div class="ttabs" id="ttabs" role="group" aria-label="Show"></div>
+      <div class="trows" id="trows"></div>
+      <button class="btn line more" id="tmore" type="button" hidden>Show all</button>
+      <p class="fine">Approximate walking distances from published transit data (StreetEasy, RealtyHop, PropertyShark), rounded, at about 2.5 mph. Not routed turn by turn. LIRR stations not counted. The walk for 51-09 99th St is unverified.</p>
+    </div>
+  </section>
+
   <section class="match" id="match">
     <div class="wrap">
-      <h2 class="reveal">Choose your <em>must-haves.</em></h2>
-      <p class="lede reveal">The field narrows as you choose. If Penthouse A isn't the right home for you, this will say so.</p>
+      <h2 class="reveal">Choose your <em>must-haves</em></h2>
+      <p class="lede reveal">The field narrows as you choose. If Penthouse A isn't the right home for you, this will say so</p>
       <div class="toggles" id="toggles" role="group" aria-label="Must-haves"></div>
       <div class="budget">
         <label for="budget">Top of budget</label>
-        <input type="range" id="budget" min="600000" max="900000" step="10000" value="900000">
-        <output id="budgetOut" for="budget" class="num">$900K</output>
+        <div class="rng" id="rng">
+          <output id="budgetOut" for="budget" class="bub num">$900K</output>
+          <input type="range" id="budget" min="600000" max="900000" step="10000" value="900000" aria-label="Top of budget">
+          <div class="ends num"><span>$600K</span><span>$750K</span><span>$900K</span></div>
+        </div>
       </div>
       <div class="r-head"><h3 id="rCount"></h3></div>
       <div id="honest"></div>
@@ -442,8 +524,8 @@ footer .lic{font-style:italic}
 
   <section class="h2h">
     <div class="wrap">
-      <h2 class="reveal">The four strongest <em>alternatives.</em></h2>
-      <p class="lede reveal">Each one wins on something. Turn the card to see what you'd give up for it.</p>
+      <h2 class="reveal">The three strongest <em>alternatives</em></h2>
+      <p class="lede reveal">Each one wins on something real. Turn the card to see why Penthouse A still comes out ahead</p>
       <div class="cards" id="cards"></div>
     </div>
   </section>
@@ -452,12 +534,12 @@ footer .lic{font-style:italic}
     <div class="wrap">
       <img src="/assets/ian-headshot.jpg" alt="Ian Gong">
       <div>
-        <h2>See it in person.</h2>
+        <h2>See it in person</h2>
         <p>Ian Gong, Casa Blanca. Listing agent for 87-14 57th Road, Penthouse A.</p>
       </div>
       <div class="ctas">
         <a class="btn solid" href="tel:+19143318881">Call 914-331-8881</a>
-        <a class="btn line" href="mailto:i.gong@casa-blanca.com?subject=87-14%2057th%20Road%20%23PHA">Email Ian</a>
+        <a class="btn line" href="mailto:i.gong@casa-blanca.com">i.gong@casa-blanca.com</a>
       </div>
     </div>
   </section>
@@ -481,44 +563,67 @@ footer .lic{font-style:italic}
    park / wd / elev: 'yes' | 'no' | 'extra' (parking sold separately) | '?'
    top: top floor   label: description   sub: one-line trade-off   */
 var PHA = { id:'pha', t:'condo', p:800000, sf:1232, br:3, fb:2, hb:0, out:1, terrace:true, top:true, park:'no', wd:'no', elev:'yes',
-  label:'Penthouse A', addr:'87-14 57th Road, Penthouse A', sub:'Top-floor duplex. Private terrace, two balconies, skyline views.' };
+  label:'Penthouse A', addr:'87-14 57th Road, Penthouse A', sub:'Top-floor duplex. Private terrace, two balconies, skyline views' };
 var HOMES = [
-  {id:'c1', t:'condo',p:818000,sf:1398,br:3,fb:1,hb:1,out:1,park:'yes',wd:'yes',elev:'no', label:'3BR walk-up condo with deeded garage', sub:'More space and a garage. Third-floor walk-up.'},
-  {id:'c2', t:'condo',p:839000,sf:1222,br:3,fb:2,hb:0,out:1,park:'extra',wd:'yes',elev:'?', label:'3BR doorman condo, third floor', sub:'Doorman, gym and washer/dryer. Balcony, not a terrace.'},
-  {id:'c3', t:'condo',p:898000,sf:1155,br:2,fb:2,hb:0,out:'?',park:'no',wd:'yes',elev:'yes', label:'2BR doorman duplex, seventh floor', sub:'Doorman and gym. $98K more for one bedroom fewer.'},
-  {id:'c4', t:'condo',p:693000,sf:1043,br:2,fb:2,hb:0,out:1,park:'yes',wd:'?',elev:'yes', label:'2BR condo, seventh floor, parking included', sub:'$107K less with parking. Tax abatement ends 2032.'},
-  {id:'c5', t:'condo',p:699000,sf:1316,br:3,fb:2,hb:0,out:1,park:'?',wd:'yes',elev:'?', label:'3BR ground-floor condo with large patio', sub:'Big outdoor area. Ground floor, fees need verifying.'},
-  {id:'c6', t:'condo',p:579888,sf:1376,br:2,fb:2,hb:0,out:1,park:'extra',wd:'?',elev:'yes', label:'2BR concierge condo, seventh floor', sub:'Low price, high carry: about $1,791/mo.'},
-  {id:'c7', t:'condo',p:719000,sf:1023,br:2,fb:2,hb:0,out:'?',park:'yes',wd:'yes',elev:'?', label:'2BR condo with assigned parking', sub:'Parking and laundry. Two bedrooms, 1,023 sf.'},
-  {id:'c8', t:'condo',p:750000,sf:1089,br:2,fb:2,hb:0,out:1,park:'yes',wd:'yes',elev:'?', label:'2BR condo with backyard and parking', sub:'343 sf backyard plus outdoor parking.'},
-  {id:'c9', t:'condo',p:720000,sf:1073,br:2,fb:2,hb:0,out:1,park:'extra',wd:'?',elev:'?', label:'2BR condo, parking sold separately', sub:'A spot is $48K extra.'},
-  {id:'c10',t:'condo',p:645000,sf:890, br:2,fb:2,hb:0,out:'?',park:'yes',wd:'yes',elev:'?', label:'2BR condo with deeded garage', sub:'Garage and laundry in 890 sf.'},
-  {id:'c11',t:'condo',p:650000,sf:852, br:2,fb:1,hb:1,out:1,park:'yes',wd:'yes',elev:'yes', label:'2BR high-floor condo with indoor parking', sub:'Parking deal, but only 852 sf.'},
-  {id:'c12',t:'condo',p:710000,sf:950, br:2,fb:2,hb:0,out:1,park:'no',wd:'?',elev:'?', top:true, label:'2BR top-floor condo', sub:'Low monthly carry. 950 sf.'},
-  {id:'c13',t:'condo',p:669000,sf:1050,br:2,fb:2,hb:0,out:1,park:'?',wd:'?',elev:'?', top:true, label:'2BR top-floor condo with balcony', sub:'About $1,143/mo in charges and taxes.'},
-  {id:'c14',t:'condo',p:699000,sf:998, br:2,fb:2,hb:0,out:1,park:'yes',wd:'yes',elev:'?', label:'2BR condo with two balconies and parking', sub:'Taxes around $13,530 a year.'},
-  {id:'c15',t:'condo',p:670000,sf:1098,br:3,fb:2,hb:0,out:0,park:'?',wd:'?',elev:'?', label:'3BR doorman condo with pool', sub:'Three bedrooms, no private outdoor space.'},
-  {id:'c16',t:'condo',p:798000,sf:935, br:3,fb:2,hb:0,out:1,park:'extra',wd:'yes',elev:'?', label:'3BR newer condo with balcony', sub:'Garage is $60K extra. 935 sf.'},
-  {id:'c17',t:'condo',p:709000,sf:1045,br:2,fb:2,hb:0,out:1,park:'no',wd:'?',elev:'?', top:true, label:'2BR top-floor condo, two balconies', sub:'Newer building. No parking listed.'},
-  {id:'c18',t:'condo',p:628000,sf:1181,br:2,fb:2,hb:0,out:'?',park:'yes',wd:'?',elev:'?', label:'2BR condo with parking, high carry', sub:'Cheap upfront. About $2,490/mo before the mortgage.'},
-  {id:'c19',t:'condo',p:570000,sf:1031,br:3,fb:1,hb:0,out:0,park:'?',wd:'?',elev:'yes', label:'3BR one-bath condo, twelfth floor', sub:'Budget three-bedroom with one bathroom.'},
-  {id:'c20',t:'condo',p:745000,sf:1000,br:2,fb:2,hb:0,out:1,park:'no',wd:'?',elev:'yes', label:'2BR refreshed sponsor condo', sub:'About $1,524/mo in charges and taxes.'},
-  {id:'c21',t:'condo',p:758000,sf:980, br:2,fb:2,hb:0,out:'?',park:'no',wd:'?',elev:'?', label:'2BR condo, sixth floor', sub:'980 sf, no confirmed parking.'},
-  {id:'h1', t:'house',p:838000,sf:1320,br:3,fb:1,hb:1,out:'?',park:'yes',wd:'?',elev:'no', label:'3BR house with garage and driveway', sub:'Two-car parking and a finished basement.'},
-  {id:'h2', t:'house',p:838000,sf:1850,br:3,fb:1,hb:1,out:1,park:'yes',wd:'?',elev:'no', label:'3BR house with garage and deck', sub:'1,850 sf advertised, may include basement.'},
-  {id:'h3', t:'house',p:849000,sf:1536,br:3,fb:1,hb:1,out:'?',park:'yes',wd:'?',elev:'no', label:'3BR house with two-car garage', sub:'Recent mechanical upgrades.'},
-  {id:'h4', t:'house',p:868000,sf:1788,br:3,fb:1,hb:1,out:'?',park:'yes',wd:'?',elev:'no', label:'3BR house with attached garage', sub:'Renovated kitchen, 2026 roof.'},
-  {id:'h5', t:'house',p:800000,sf:1248,br:3,fb:1,hb:1,out:1,park:'yes',wd:'?',elev:'no', label:'3BR house, needs renovation', sub:'Same price as PHA, plus renovation.'},
-  {id:'h6', t:'house',p:898000,sf:1689,br:3,fb:2,hb:0,out:1,park:'yes',wd:'?',elev:'no', label:'3BR house with yard and garage', sub:'$98K more. Full finished basement.'},
-  {id:'h7', t:'house',p:849000,sf:1152,br:3,fb:2,hb:0,out:1,park:'yes',wd:'?',elev:'no', label:'3BR house with patios and parking', sub:'Garage plus a space, 1,152 sf.'},
-  {id:'h8', t:'house',p:865000,sf:1488,br:3,fb:2,hb:0,out:1,park:'yes',wd:'?',elev:'no', label:'3BR house that needs TLC', sub:'Garage, yard, attic and basement.'},
-  {id:'h9', t:'house',p:849000,sf:1280,br:3,fb:2,hb:0,out:'?',park:'yes',wd:'?',elev:'no', label:'3BR semi-detached with two-car garage', sub:'$49K more. Finished basement.'},
-  {id:'h10',t:'house',p:749999,sf:1312,br:3,fb:1,hb:1,out:'?',park:'?',wd:'?',elev:'no', label:'3BR house', sub:'$50K less. Parking not verified.'},
-  {id:'h11',t:'house',p:793000,sf:1553,br:3,fb:null,hb:null,out:1,park:'?',wd:'?',elev:'no', label:'3BR house with backyard', sub:'Bath count not confirmed.'}
+  {id:'c1', t:'condo',p:818000,sf:1398,br:3,fb:1,hb:1,out:1,park:'yes',wd:'yes',elev:'no', label:'3BR walk-up condo with deeded garage', sub:'More space and a garage. Third-floor walk-up'},
+  {id:'c2', t:'condo',p:839000,sf:1222,br:3,fb:2,hb:0,out:1,park:'extra',wd:'yes',elev:'?', label:'3BR doorman condo, third floor', sub:'Doorman, gym and washer/dryer. Balcony, not a terrace'},
+  {id:'c3', t:'condo',p:898000,sf:1155,br:2,fb:2,hb:0,out:'?',park:'no',wd:'yes',elev:'yes', label:'2BR doorman duplex, seventh floor', sub:'Doorman and gym. $98K more for one bedroom fewer'},
+  {id:'c4', t:'condo',p:693000,sf:1043,br:2,fb:2,hb:0,out:1,park:'yes',wd:'?',elev:'yes', label:'2BR condo, seventh floor, parking included', sub:'$107K less with parking. Tax abatement ends 2032'},
+  {id:'c5', t:'condo',p:699000,sf:1316,br:3,fb:2,hb:0,out:1,park:'?',wd:'yes',elev:'?', label:'3BR ground-floor condo with large patio', sub:'Big outdoor area. Ground floor, fees need verifying'},
+  {id:'c6', t:'condo',p:579888,sf:1376,br:2,fb:2,hb:0,out:1,park:'extra',wd:'?',elev:'yes', label:'2BR concierge condo, seventh floor', sub:'Low price, high carry: about $1,791/mo'},
+  {id:'c7', t:'condo',p:719000,sf:1023,br:2,fb:2,hb:0,out:'?',park:'yes',wd:'yes',elev:'?', label:'2BR condo with assigned parking', sub:'Parking and laundry. Two bedrooms, 1,023 sf'},
+  {id:'c8', t:'condo',p:750000,sf:1089,br:2,fb:2,hb:0,out:1,park:'yes',wd:'yes',elev:'?', label:'2BR condo with backyard and parking', sub:'343 sf backyard plus outdoor parking'},
+  {id:'c9', t:'condo',p:720000,sf:1073,br:2,fb:2,hb:0,out:1,park:'extra',wd:'?',elev:'?', label:'2BR condo, parking sold separately', sub:'A spot is $48K extra'},
+  {id:'c10',t:'condo',p:645000,sf:890, br:2,fb:2,hb:0,out:'?',park:'yes',wd:'yes',elev:'?', label:'2BR condo with deeded garage', sub:'Garage and laundry in 890 sf'},
+  {id:'c11',t:'condo',p:650000,sf:852, br:2,fb:1,hb:1,out:1,park:'yes',wd:'yes',elev:'yes', label:'2BR high-floor condo with indoor parking', sub:'Parking deal, but only 852 sf'},
+  {id:'c12',t:'condo',p:710000,sf:950, br:2,fb:2,hb:0,out:1,park:'no',wd:'?',elev:'?', top:true, label:'2BR top-floor condo', sub:'Low monthly carry. 950 sf'},
+  {id:'c13',t:'condo',p:669000,sf:1050,br:2,fb:2,hb:0,out:1,park:'?',wd:'?',elev:'?', top:true, label:'2BR top-floor condo with balcony', sub:'About $1,143/mo in charges and taxes'},
+  {id:'c14',t:'condo',p:699000,sf:998, br:2,fb:2,hb:0,out:1,park:'yes',wd:'yes',elev:'?', label:'2BR condo with two balconies and parking', sub:'Taxes around $13,530 a year'},
+  {id:'c15',t:'condo',p:670000,sf:1098,br:3,fb:2,hb:0,out:0,park:'?',wd:'?',elev:'?', label:'3BR doorman condo with pool', sub:'Three bedrooms, no private outdoor space'},
+  {id:'c16',t:'condo',p:798000,sf:935, br:3,fb:2,hb:0,out:1,park:'extra',wd:'yes',elev:'?', label:'3BR newer condo with balcony', sub:'Garage is $60K extra. 935 sf'},
+  {id:'c17',t:'condo',p:709000,sf:1045,br:2,fb:2,hb:0,out:1,park:'no',wd:'?',elev:'?', top:true, label:'2BR top-floor condo, two balconies', sub:'Newer building. No parking listed'},
+  {id:'c18',t:'condo',p:628000,sf:1181,br:2,fb:2,hb:0,out:'?',park:'yes',wd:'?',elev:'?', label:'2BR condo with parking, high carry', sub:'Cheap upfront. About $2,490/mo before the mortgage'},
+  {id:'c19',t:'condo',p:570000,sf:1031,br:3,fb:1,hb:0,out:0,park:'?',wd:'?',elev:'yes', label:'3BR one-bath condo, twelfth floor', sub:'Budget three-bedroom with one bathroom'},
+  {id:'c20',t:'condo',p:745000,sf:1000,br:2,fb:2,hb:0,out:1,park:'no',wd:'?',elev:'yes', label:'2BR refreshed sponsor condo', sub:'About $1,524/mo in charges and taxes'},
+  {id:'c21',t:'condo',p:758000,sf:980, br:2,fb:2,hb:0,out:'?',park:'no',wd:'?',elev:'?', label:'2BR condo, sixth floor', sub:'980 sf, no confirmed parking'},
+  {id:'h1', t:'house',p:838000,sf:1320,br:3,fb:1,hb:1,out:'?',park:'yes',wd:'?',elev:'no', label:'3BR house with garage and driveway', sub:'Two-car parking and a finished basement'},
+  {id:'h2', t:'house',p:838000,sf:1850,br:3,fb:1,hb:1,out:1,park:'yes',wd:'?',elev:'no', label:'3BR house with garage and deck', sub:'1,850 sf advertised, may include basement'},
+  {id:'h3', t:'house',p:849000,sf:1536,br:3,fb:1,hb:1,out:'?',park:'yes',wd:'?',elev:'no', label:'3BR house with two-car garage', sub:'Recent mechanical upgrades'},
+  {id:'h4', t:'house',p:868000,sf:1788,br:3,fb:1,hb:1,out:'?',park:'yes',wd:'?',elev:'no', label:'3BR house with attached garage', sub:'Renovated kitchen, 2026 roof'},
+  {id:'h5', t:'house',p:800000,sf:1248,br:3,fb:1,hb:1,out:1,park:'yes',wd:'?',elev:'no', label:'3BR house, needs renovation', sub:'Same price as PHA, plus renovation'},
+  {id:'h6', t:'house',p:898000,sf:1689,br:3,fb:2,hb:0,out:1,park:'yes',wd:'?',elev:'no', label:'3BR house with yard and garage', sub:'$98K more. Full finished basement'},
+  {id:'h7', t:'house',p:849000,sf:1152,br:3,fb:2,hb:0,out:1,park:'yes',wd:'?',elev:'no', label:'3BR house with patios and parking', sub:'Garage plus a space, 1,152 sf'},
+  {id:'h8', t:'house',p:865000,sf:1488,br:3,fb:2,hb:0,out:1,park:'yes',wd:'?',elev:'no', label:'3BR house that needs TLC', sub:'Garage, yard, attic and basement'},
+  {id:'h9', t:'house',p:849000,sf:1280,br:3,fb:2,hb:0,out:'?',park:'yes',wd:'?',elev:'no', label:'3BR semi-detached with two-car garage', sub:'$49K more. Finished basement'},
+  {id:'h10',t:'house',p:749999,sf:1312,br:3,fb:1,hb:1,out:'?',park:'?',wd:'?',elev:'no', label:'3BR house', sub:'$50K less. Parking not verified'},
+  {id:'h11',t:'house',p:793000,sf:1553,br:3,fb:null,hb:null,out:1,park:'?',wd:'?',elev:'no', label:'3BR house with backyard', sub:'Bath count not confirmed'}
 ];
 var ALL = HOMES.concat([PHA]);
 var PHOTOS = /*__PHOTOS__*/[];   // ids that have a photo on the server
 var PRIV = /*__PRIV__*/null;   // street addresses + notes, injected by api/compare.js after sign-in
+
+// nearest subway (not LIRR): station, lines, miles, minutes (midpoint when a range), display time
+var TR = {
+  pha:{s:'Woodhaven Blvd',l:'MR',mi:.2,m:4.5,t:'4-5'},
+  c1:{s:'Grand Av-Newtown',l:'MR',mi:.7,m:17}, c2:{s:'61 St-Woodside',l:'7',mi:.4,m:10}, c3:{s:'63 Dr-Rego Park',l:'MR',mi:.2,m:5},
+  c4:{s:'69 St',l:'7',mi:.5,m:12}, c5:{s:'Junction Blvd',l:'7',mi:.3,m:7}, c6:{s:'Kew Gardens-Union Tpke',l:'EF',mi:.7,m:17},
+  c7:{s:'Middle Village-Metropolitan Av',l:'M',mi:.6,m:14}, c8:{s:'Northern Blvd',l:'MR',mi:.4,m:9}, c9:{s:'69 St',l:'7',mi:.3,m:7},
+  c10:{s:'Middle Village-Metropolitan Av',l:'M',mi:.3,m:7}, c11:{s:'Woodhaven Blvd',l:'MR',mi:.1,m:2}, c12:{s:'63 Dr-Rego Park',l:'MR',mi:.7,m:17},
+  c13:{s:'67 Av',l:'MR',mi:.7,m:14.5,t:'12-17'}, c14:{s:'69 St',l:'7',mi:.3,m:7}, c15:{s:'65 St',l:'MR',mi:.2,m:4},
+  c16:{s:'63 Dr-Rego Park',l:'MR',mi:.3,m:7}, c17:{s:'Elmhurst Av',l:'MR',mi:.1,m:2.5,t:'2-3'}, c18:{s:'63 Dr-Rego Park',l:'MR',mi:.4,m:10},
+  c19:{s:'Woodhaven Blvd',l:'MR',mi:.8,m:19}, c20:{s:'67 Av',l:'MR',mi:.1,m:2}, c21:{s:'82 St-Jackson Hts',l:'7',mi:.3,m:7},
+  h1:{s:'Middle Village-Metropolitan Av',l:'M',mi:1.1,m:26}, h2:{s:'85 St-Forest Pkwy',l:'J',mi:1.0,m:24}, h3:{s:'Woodhaven Blvd',l:'JZ',mi:1.1,m:26},
+  h4:{s:'67 Av',l:'MR',mi:1.0,m:24}, h5:{s:'Fresh Pond Rd',l:'M',mi:.6,m:14}, h6:{s:'Woodhaven Blvd',l:'MR',mi:1.0,m:25},
+  h7:{s:'Woodhaven Blvd',l:'MR',mi:1.1,m:26}, h8:{s:'Forest Hills-71 Av',l:'EFMR',mi:1.2,m:29}, h9:{s:'Fresh Pond Rd',l:'M',mi:.8,m:19},
+  h10:{s:'75 St-Elderts Ln',l:'JZ',mi:1.2,m:29}, h11:{s:'75 St-Elderts Ln',l:'JZ',mi:1.0,m:24}
+};
+function lines(code){ return '<span class="lns">' + code.split('').map(function(c){ return '<span class="ln l' + c + '" aria-label="' + c + ' train">' + c + '</span>'; }).join('') + '</span>'; }
+function walkT(id){ var t = TR[id]; return (t.t || String(t.m)) + ' min'; }
+function miles(id){ var v = TR[id].mi; return (v < 1 ? String(v).replace(/^0/, '') : v.toFixed(1)) + ' mi'; }
+function hasPhoto(h){ return PHOTOS.indexOf(h.id) >= 0; }
+function thumb(h, cls){ return hasPhoto(h) ? '<span class="' + (cls || 'thumb') + '"><img src="/compare?img=' + h.id + '" alt="" loading="lazy" decoding="async"></span>' : ''; }
+function subRow(id){ var t = TR[id]; return '<div class="m sub">' + lines(t.l) + '<span>' + esc(t.s) + '</span><span><b>' + walkT(id) + '</b> walk, ' + miles(id) + '</span></div>'; }
+
 
 /* ---------------- helpers ---------------- */
 function $(id){ return document.getElementById(id); }
@@ -548,6 +653,9 @@ function versus(h){
   if(h.fb != null && h.fb < 2) pha.push('A second full bath');
   if(h.out === 0) pha.push('Private outdoor space');
   if(h.elev === 'no') pha.push(h.t === 'house' ? 'Condo upkeep: the roof and boiler aren\'t yours' : 'An elevator, no stairs');
+  var dm = TR[h.id].m - TR.pha.m;
+  if(dm >= 4) pha.push('A subway about ' + Math.round(dm) + ' minutes closer');
+  else if(dm <= -2) plus.push('A subway about ' + Math.round(-dm) + ' minutes closer');
   pha.push(h.top ? 'A private terrace' : 'A top-floor skyline terrace');
   return { plus: plus, pha: pha };
 }
@@ -564,12 +672,12 @@ function hideTip(){ tip.classList.remove('show'); }
 
 /* ---------------- funnel: click-through filters, plays once on arrival ---------------- */
 var STEPS = [
-  { name:'Every home in the field', short:'Every home', sub:'21 condos and 11 houses, plus Penthouse A. Co-ops left out.', label:'homes in the field', test:function(){ return true; } },
-  { name:'Three bedrooms', short:'Three bedrooms', sub:'Most of the field is two-bedroom condos.', label:'have three bedrooms', test:function(h){ return h.br >= 3; } },
-  { name:'Two full bathrooms', short:'Two full baths', sub:'Most of the three-bedroom houses have one and a half.', label:'also have two full baths', test:function(h){ return h.br >= 3 && h.fb >= 2; } },
-  { name:'1,200 square feet or more', short:'1,200+ sq ft', sub:'A real step up in space, not just another room.', label:'are also 1,200+ sq ft', test:function(h){ return h.br >= 3 && h.fb >= 2 && h.sf >= 1200; } },
-  { name:'Condo living', short:'Condo living', sub:'The roof, boiler and facade are the building\'s job.', label:'are also condos', test:function(h){ return h.br >= 3 && h.fb >= 2 && h.sf >= 1200 && h.t === 'condo'; } },
-  { name:'A top-floor terrace with skyline views', short:'Penthouse A', sub:'This is where the field runs out.', label:'home has all of it', test:function(h){ return h.br >= 3 && h.fb >= 2 && h.sf >= 1200 && h.t === 'condo' && h.terrace && h.top; } }
+  { name:'Every home in the field', short:'Every home', sub:'21 condos and 11 houses, plus Penthouse A. Co-ops left out', label:'homes in the field', test:function(){ return true; } },
+  { name:'Three bedrooms', short:'Three bedrooms', sub:'Most of the field is two-bedroom condos', label:'have three bedrooms', test:function(h){ return h.br >= 3; } },
+  { name:'Two full bathrooms', short:'Two full baths', sub:'Most of the three-bedroom houses have one and a half', label:'also have two full baths', test:function(h){ return h.br >= 3 && h.fb >= 2; } },
+  { name:'1,200 square feet or more', short:'1,200+ sq ft', sub:'A real step up in space, not just another room', label:'are also 1,200+ sq ft', test:function(h){ return h.br >= 3 && h.fb >= 2 && h.sf >= 1200; } },
+  { name:'Condo living', short:'Condo living', sub:'The roof, boiler and facade are the building\'s job', label:'are also condos', test:function(h){ return h.br >= 3 && h.fb >= 2 && h.sf >= 1200 && h.t === 'condo'; } },
+  { name:'A top-floor terrace with skyline views', short:'Penthouse A', sub:'This is where the field runs out', label:'home has all of it', test:function(h){ return h.br >= 3 && h.fb >= 2 && h.sf >= 1200 && h.t === 'condo' && h.terrace && h.top; } }
 ];
 var order = HOMES.slice().sort(function(a,b){ return (a.t === b.t ? a.p - b.p : (a.t === 'condo' ? -1 : 1)); });
 order.splice(16, 0, PHA);
@@ -709,7 +817,7 @@ function renderDetail(){
   var d = $('detail'), h = selected;
   if(h.id === 'pha'){
     d.innerHTML = '<div class="ad">' + esc(PHA.addr) + '</div><div class="t">The penthouse</div>' +
-      '<div class="m"><span><b>' + fk(h.p) + '</b></span><span><b>' + n(h.sf) + '</b> sf</span><span><b>3</b> bd / <b>2</b> ba</span><span><b>$649</b>/sf</span></div>' +
+      '<div class="m"><span><b>' + fk(h.p) + '</b></span><span><b>' + n(h.sf) + '</b> sf</span><span><b>3</b> bd / <b>2</b> ba</span><span><b>$649</b>/sf</span></div>' + subRow('pha') +
       '<div class="vs"><div class="pha-col"><h4>What you get</h4><ul>' + li(['Three bedrooms, two full baths','A 15\'6" x 12\'11" private terrace','Two balconies','Protected skyline views','An elevator and a live-in super']) + '</ul></div>' +
       '<div><h4>What it asks of you</h4><ul>' + li(['No deeded parking','Laundry in the basement','A spiral stair between floors']) + '</ul></div></div>' +
       '<p class="note">Tap any other home on the chart to set it beside Penthouse A.</p>';
@@ -717,7 +825,7 @@ function renderDetail(){
   }
   var v = versus(h), a = addrOf(h), w = watchOf(h);
   d.innerHTML = (a ? '<div class="ad">' + esc(a) + '</div>' : '') + '<div class="t">' + esc(h.label) + '</div>' +
-    '<div class="m"><span><b>' + fk(h.p) + '</b></span><span><b>' + n(h.sf) + '</b> sf</span><span><b>' + h.br + '</b> bd / <b>' + baths(h) + '</b> ba</span><span><b>$' + ppsf(h) + '</b>/sf</span></div>' +
+    '<div class="m"><span><b>' + fk(h.p) + '</b></span><span><b>' + n(h.sf) + '</b> sf</span><span><b>' + h.br + '</b> bd / <b>' + baths(h) + '</b> ba</span><span><b>$' + ppsf(h) + '</b>/sf</span></div>' + subRow(h.id) +
     '<div class="vs"><div><h4>It gives you</h4><ul>' + (v.plus.length ? li(v.plus) : '<li>--</li>') + '</ul></div>' +
     '<div class="pha-col"><h4>Penthouse A gives you</h4><ul>' + li(v.pha) + '</ul></div></div>' +
     (w ? '<p class="note">' + esc(w) + '</p>' : '');
@@ -742,9 +850,9 @@ if('IntersectionObserver' in window && !reduce){
 
 /* ---------------- building sales ---------------- */
 var SALES = [
-  { name:'#5A', sub:'Sold July 2026. 2 bd / 1 ba, $595K', sf:824, v:722 },
-  { name:'#PHB', sub:'Sold September 2024. 2 bd / 2 ba, $650K', sf:925, v:703 },
-  { name:'Penthouse A', sub:'Asking. 3 bd / 2 ba, $800K', sf:1232, v:649, pha:true }
+  { name:'#5A', sub:'Sold July 2026, 2 bd / 1 ba, $595K', sf:824, v:722 },
+  { name:'#PHB', sub:'Sold September 2024, 2 bd / 2 ba, $650K', sf:925, v:703 },
+  { name:'Penthouse A', sub:'Asking, 3 bd / 2 ba, $800K', sf:1232, v:649, pha:true }
 ];
 var rowsEl = $('rows'), lo = 600, hi = 740;
 SALES.forEach(function(s){
@@ -762,12 +870,13 @@ var CHIPS = [
   { k:'br3', t:'3 bedrooms', f:function(h){ return h.br >= 3; } },
   { k:'fb2', t:'2 full baths', f:function(h){ return h.fb >= 2; } },
   { k:'sf', t:'1,200+ sq ft', f:function(h){ return h.sf >= 1200; } },
-  { k:'out', t:'Private outdoor space', f:function(h){ return h.out === 1; } },
+  { k:'out', t:'Outdoor space', f:function(h){ return h.out === 1; } },
   { k:'ter', t:'Skyline terrace', f:function(h){ return !!(h.terrace && h.top); } },
   { k:'elev', t:'Elevator', f:function(h){ return h.elev === 'yes'; } },
-  { k:'condo', t:'Condo, not a house', f:function(h){ return h.t === 'condo'; } },
-  { k:'park', t:'Parking included', f:function(h){ return h.park === 'yes'; } },
-  { k:'wd', t:'Laundry in the unit', f:function(h){ return h.wd === 'yes'; } }
+  { k:'condo', t:'Condo', f:function(h){ return h.t === 'condo'; } },
+  { k:'park', t:'Parking', f:function(h){ return h.park === 'yes'; } },
+  { k:'wd', t:'In-unit laundry', f:function(h){ return h.wd === 'yes'; } },
+  { k:'sub', t:'Subway under 10 min', f:function(h){ return TR[h.id].m < 10; } }
 ];
 var picked = { br3:true, fb2:true }, showAll = false;
 CHIPS.forEach(function(c){
@@ -783,14 +892,21 @@ CHIPS.forEach(function(c){
   $('toggles').appendChild(b);
 });
 var budget = $('budget');
-budget.addEventListener('input', function(){ $('budgetOut').textContent = fk(+budget.value); showAll = false; renderMatch(); });
+function paintBudget(){
+  var v = +budget.value, pct = (v - budget.min) / (budget.max - budget.min);
+  $('rng').style.setProperty('--p', pct.toFixed(4));
+  $('budgetOut').textContent = (v >= +budget.max ? 'Up to ' : '') + fk(v);
+  $('budgetOut').classList.toggle('below', v < PHA.p);
+}
+paintBudget();
+budget.addEventListener('input', function(){ paintBudget(); showAll = false; renderMatch(); });
 $('moreBtn').addEventListener('click', function(){ showAll = true; renderMatch(); });
 function renderMatch(){
   var active = CHIPS.filter(function(c){ return picked[c.k]; }), cap = +budget.value;
   var fits = ALL.filter(function(h){ return h.p <= cap && active.every(function(c){ return c.f(h); }); });
   fits.sort(function(a,b){ return a.id === 'pha' ? -1 : b.id === 'pha' ? 1 : a.p - b.p; });
   var phaIn = fits.indexOf(PHA) >= 0;
-  $('rCount').textContent = fits.length === 0 ? 'No home has all of that.' : fits.length === 1 ? (phaIn ? 'One home fits. It\'s Penthouse A.' : 'One home fits.') : fits.length + ' homes fit.';
+  $('rCount').textContent = fits.length === 0 ? 'No home has all of that' : fits.length === 1 ? (phaIn ? 'One home fits: Penthouse A' : 'One home fits') : fits.length + ' homes fit';
   var reasons = [];
   if(!phaIn){
     if(picked.park) reasons.push('there is no deeded parking');
@@ -802,7 +918,7 @@ function renderMatch(){
   var lim = showAll ? fits.length : 9, html = '';
   fits.slice(0, lim).forEach(function(h, i){
     var a = addrOf(h), w = watchOf(h);
-    html += '<div class="res' + (h.id === 'pha' ? ' pha' : '') + '" style="animation-delay:' + (i * 35) + 'ms">' +
+    html += '<div class="res' + (h.id === 'pha' ? ' pha' : '') + '" style="animation-delay:' + (i * 35) + 'ms">' + thumb(h, 'res-img') +
       (a ? '<div class="ad">' + esc(a) + '</div>' : '') +
       '<div class="tt">' + esc(h.id === 'pha' ? 'Penthouse A, the listing' : h.label) + '</div><div class="ms">' + esc(meta(h)) + '</div>' +
       '<div class="ms">' + esc(h.sub) + '</div>' + (w ? '<div class="tw">' + esc(w) + '</div>' : '') + '</div>';
@@ -812,6 +928,49 @@ function renderMatch(){
 }
 renderMatch();
 
+/* ---------------- walk to the subway ---------------- */
+(function(){
+  function med(arr){ var a = arr.slice().sort(function(x,y){ return x - y; }), k = a.length >> 1; return a.length % 2 ? a[k] : (a[k-1] + a[k]) / 2; }
+  var condoM = med(HOMES.filter(function(h){ return h.t === 'condo'; }).map(function(h){ return TR[h.id].m; }));
+  var houseH = HOMES.filter(function(h){ return h.t === 'house'; });
+  var houseM = med(houseH.map(function(h){ return TR[h.id].m; })), houseMi = med(houseH.map(function(h){ return TR[h.id].mi; }));
+  var slower = HOMES.filter(function(h){ return TR[h.id].m > TR.pha.m; }).length;
+  $('tstats').innerHTML =
+    '<div class="tstat pha"><b>4-5<small>min</small></b><span>' + lines('MR') + 'Penthouse A to Woodhaven Blvd</span><em>0.2 mi, faster than ' + slower + ' of the 32 other homes</em></div>' +
+    '<div class="tstat"><b>' + condoM + '<small>min</small></b><span>The typical condo in the field</span><em>Median walk across 21 condos</em></div>' +
+    '<div class="tstat"><b>' + houseM + '<small>min</small></b><span>The typical house in the field</span><em>About ' + houseMi.toFixed(1) + ' mi, median across 11 houses</em></div>';
+  var tabs = [{k:'all',t:'All 33'},{k:'condo',t:'Condos'},{k:'house',t:'Houses'}], tab = 'all', all = false;
+  tabs.forEach(function(x){
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'tg' + (x.k === tab ? ' on' : '');
+    b.innerHTML = '<span class="box" aria-hidden="true"></span>' + x.t; b.setAttribute('aria-pressed', x.k === tab ? 'true' : 'false');
+    b.addEventListener('click', function(){
+      tab = x.k; all = false;
+      $('ttabs').querySelectorAll('.tg').forEach(function(e){ e.classList.toggle('on', e === b); e.setAttribute('aria-pressed', e === b ? 'true' : 'false'); });
+      draw();
+    });
+    $('ttabs').appendChild(b);
+  });
+  $('tmore').addEventListener('click', function(){ all = true; draw(); });
+  function draw(){
+    var list = ALL.filter(function(h){ return h.id === 'pha' || tab === 'all' || h.t === tab; })
+      .sort(function(a,b){ return TR[a.id].m - TR[b.id].m || (a.id === 'pha' ? -1 : 1); });
+    var lim = all ? list.length : 10, shown = list.slice(0, lim), html = '';
+    if(list.indexOf(PHA) >= lim) shown.push(PHA);
+    shown.forEach(function(h){
+      var t = TR[h.id], rank = list.indexOf(h) + 1, a = addrOf(h);
+      html += '<div class="trow' + (h.id === 'pha' ? ' pha' : '') + '">' +
+        '<span class="rk num">' + rank + '</span>' +
+        '<span class="who"><b>' + esc(h.id === 'pha' ? 'Penthouse A' : (a || h.label)) + '</b><span>' + esc(h.id === 'pha' ? 'The listing' : (a ? h.label : meta(h))) + '</span></span>' +
+        '<span class="st">' + lines(t.l) + '<span class="nm">' + esc(t.s) + '</span></span>' +
+        '<span class="barw"><span class="bar" style="width:' + (t.m / 30 * 100).toFixed(1) + '%"></span></span>' +
+        '<span class="tm num">' + (t.t || t.m) + '<small>min</small></span></div>';
+    });
+    $('trows').innerHTML = html;
+    var mb = $('tmore'); mb.hidden = list.length <= lim; mb.textContent = 'Show all ' + list.length;
+  }
+  draw();
+})();
+
 /* ---------------- head to head ---------------- */
 var H2H = [
   { id:'c1', name:'The garage walk-up', gives:['166 more sq ft','A deeded garage','A washer in the unit','About $645/mo less in charges and taxes'],
@@ -820,19 +979,21 @@ var H2H = [
     pha:['189 more sq ft','A third bedroom','A 15\'6" x 12\'11" private terrace'] },
   { id:'h1', name:'The garage house', gives:['A garage plus a driveway','A finished basement','No common charges'],
     pha:['A second full bath','An elevator','The roof, boiler and facade are the condo\'s job','A price $38K lower'] },
-  { id:'c2', name:'The doorman three-bedroom', gives:['A doorman and gym','A washer/dryer in the unit','A balcony'],
-    pha:['A price $39K lower','A top-floor terrace instead of a balcony','Skyline views from home'] }
 ];
+H2H[0].edge = '<b>Peace and quiet.</b> Its balcony sits right above the rail tracks, and the subway is a 17-minute walk. Penthouse A is 4-5 minutes from the M and R.';
+H2H[1].edge = '<b>Peace and quiet.</b> It faces Queens Boulevard traffic, and the 7 is a 12-minute walk. Penthouse A is a top floor on a side street, 4-5 minutes from the M and R.';
+H2H[2].edge = '<b>A house is not a condo.</b> The roof, boiler and facade are yours to fix, and the nearest subway is a 26-minute walk. Penthouse A is 4-5 minutes away.';
 (function renderCards(){
   var html = '';
   H2H.forEach(function(c, i){
     var h = HOMES.filter(function(x){ return x.id === c.id; })[0], a = addrOf(h), w = watchOf(h);
     html += '<button class="flip reveal" type="button" data-i="' + i + '" aria-pressed="false">' +
       '<div class="flip-in">' +
-        '<div class="face front"><div class="who">' + esc(meta(h)) + '</div><h3>' + esc(c.name) + '</h3>' +
-          (a ? '<div class="ad">' + esc(a) + '</div>' : '') + '<ul>' + li(c.gives) + '</ul>' +
+        '<div class="face front">' + thumb(h, 'face-img') + '<div class="who">' + esc(meta(h)) + '</div><h3>' + esc(c.name) + '</h3>' +
+          (a ? '<div class="ad">' + esc(a) + '</div>' : '') + '<div class="rt">' + lines(TR[h.id].l) + esc(TR[h.id].s) + ', ' + walkT(h.id) + ' walk</div><ul>' + li(c.gives) + '</ul>' +
           (w ? '<p class="catch">' + esc(w) + '</p>' : '') + '<div class="turn">What Penthouse A gives you instead <span class="arr" aria-hidden="true">&rarr;</span></div></div>' +
-        '<div class="face back"><div class="who">Penthouse A, $800K, 1,232 sf</div><h3>Instead, you get</h3><ul>' + li(c.pha) + '</ul>' +
+        '<div class="face back">' + thumb(PHA, 'face-img') + '<div class="who">Penthouse A, $800K, 1,232 sf</div><h3>Why Penthouse A wins</h3>' +
+          '<div class="edge-k">The difference</div><p class="edge">' + c.edge + '</p><ul>' + li(c.pha) + '</ul>' +
           '<div class="turn"><span class="arr" aria-hidden="true">&larr;</span> Back to ' + esc(c.name.replace(/^The /,'the ')) + '</div></div>' +
       '</div></button>';
   });
