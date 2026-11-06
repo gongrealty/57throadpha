@@ -4,7 +4,11 @@
   "installCommand": null,
   "outputDirectory": "public",
   "cleanUrls": true,
+  "functions": {
+    "api/compare.js": { "includeFiles": "api/_compare-page.html" }
+  },
   "rewrites": [
+    { "source": "/compare",     "destination": "/api/compare" },
     { "source": "/robots.txt",  "destination": "/api/seo?type=robots" },
     { "source": "/sitemap.xml", "destination": "/api/seo?type=sitemap" }
   ],
