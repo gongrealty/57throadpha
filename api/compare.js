@@ -1,9 +1,10 @@
 // /compare (rewritten here by vercel.json): password-protected buyer comparison.
 //   GET  /compare                 -> the full page if the visitor holds a valid cookie, else the sign-in page
-//   POST /compare  password=...   -> checks env COMPARE_PASSWORD, sets a 30-day HttpOnly cookie, redirects back
+//   POST /compare  agent=...&password=... -> both must exactly match env COMPARE_AGENT + COMPARE_PASSWORD
+//                                  (surrounding spaces ignored, case counts); sets a 30-day HttpOnly cookie
 //   POST /compare  action=lock    -> clears the cookie (sign out)
 // Nothing of the comparison (page, addresses, notes) is sent before the password is checked here.
-// Changing COMPARE_PASSWORD signs everyone out, because the cookie is signed with it.
+// Changing either setting signs everyone out, because the cookie is signed with both.
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
@@ -15,10 +16,12 @@ const DAYS = 30;
 const PAGE = path.join(__dirname, '_compare-page.html');
 
 function pw(){ return String(process.env.COMPARE_PASSWORD || '').trim(); }
-function sign(v){ return crypto.createHmac('sha256', pw() + '::pha-compare-v1').update(v).digest('hex'); }
+function agentName(){ return String(process.env.COMPARE_AGENT || '').trim(); }
+function configured(){ return !!(pw() && agentName()); }
+function sign(v){ return crypto.createHmac('sha256', agentName() + '::' + pw() + '::pha-compare-v1').update(v).digest('hex'); }
 function makeToken(){ const exp = String(Date.now() + DAYS * 86400000); return exp + '.' + sign(exp); }
 function validToken(tok){
-  if(!pw() || !tok) return false;
+  if(!configured() || !tok) return false;
   const i = tok.indexOf('.'); if(i < 0) return false;
   const exp = tok.slice(0, i), sig = tok.slice(i + 1), good = sign(exp);
   if(sig.length !== good.length) return false;
@@ -56,7 +59,7 @@ function redirect(res){ res.statusCode = 303; res.setHeader('Location', '/compar
 
 function attr(v){ return String(v || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function signInPage(error, name){
-  const msg = error === 'wrong' ? 'That password didn\'t work. Check with Ian.'
+  const msg = error === 'wrong' ? 'That name and password didn\'t match. Check with Ian.'
             : error === 'name'  ? 'Please enter your name.'
             : error === 'off'   ? 'This report isn\'t open yet. Ask Ian for access.' : '';
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -109,11 +112,11 @@ module.exports = async (req, res) => {
   if(req.method === 'POST'){
     const body = await readForm(req);
     if(body.action === 'lock'){ setCookie(res, '', 0); redirect(res); return; }
-    if(!pw()){ send(res, 503, signInPage('off')); return; }
+    if(!configured()){ send(res, 503, signInPage('off')); return; }
     const agent = String(body.agent || '').trim().slice(0, 80);
     const given = String(body.password || '').trim();
     if(!agent){ send(res, 400, signInPage('name')); return; }
-    const ok = !!given && sameSecret(given, pw());
+    const ok = !!(sameSecret(agent, agentName()) & sameSecret(given, pw()));   // check both, no early exit
     await logSignIn(req, agent, ok);
     if(ok){ setCookie(res, makeToken(), DAYS * 86400); redirect(res); return; }
     await new Promise(r => setTimeout(r, 600));   // slow down guessing
@@ -122,7 +125,7 @@ module.exports = async (req, res) => {
   }
   if(req.method !== 'GET' && req.method !== 'HEAD'){ res.statusCode = 405; res.end(); return; }
 
-  if(!validToken(parseCookies(req)[COOKIE])){ send(res, 200, signInPage(pw() ? '' : 'off')); return; }
+  if(!validToken(parseCookies(req)[COOKIE])){ send(res, 200, signInPage(configured() ? '' : 'off')); return; }
 
   const html = fs.readFileSync(PAGE, 'utf8')
     .replace('/*__PRIV__*/null', JSON.stringify(PRIVATE).replace(/</g, '\\u003c'));
