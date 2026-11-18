@@ -19,7 +19,10 @@ function photoIds(){ try { return fs.readdirSync(IMG_DIR).filter(f => /^[a-z0-9]
 
 function pw(){ return String(process.env.COMPARE_PASSWORD || '').trim(); }
 function agentName(){ return String(process.env.COMPARE_AGENT || '').trim(); }
-function configured(){ return !!(pw() && agentName()); }
+// CLOSED (2026-11-17, Ian): the page is kept but no one can sign in, and old cookies stop working.
+// To reopen: set CLOSED = false AND put a NEW agent name + password in Vercel env.
+const CLOSED = true;
+function configured(){ return !CLOSED && !!(pw() && agentName()); }
 function sign(v){ return crypto.createHmac('sha256', agentName() + '::' + pw() + '::pha-compare-v1').update(v).digest('hex'); }
 function makeToken(){ const exp = String(Date.now() + DAYS * 86400000); return exp + '.' + sign(exp); }
 function validToken(tok){
